@@ -1,0 +1,922 @@
+{
+  "name": "Daglig AI-driven marknadsnyhetsbot",
+  "nodes": [
+    {
+      "id": "n_1",
+      "name": "Schedule Trigger — 07:00 SE",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -460,
+        -120
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n_2",
+      "name": "Schedule Trigger — 17:00 Global",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -460,
+        1020
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "n_3",
+      "name": "RSS — Di.se",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -280
+      ],
+      "parameters": {
+        "url": "https://www.di.se/rss"
+      }
+    },
+    {
+      "id": "n_4",
+      "name": "RSS — Placera.se",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -120
+      ],
+      "parameters": {
+        "url": "https://www.placera.se/rss.xml"
+      }
+    },
+    {
+      "id": "n_5",
+      "name": "RSS — Affärsvärlden",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        40
+      ],
+      "parameters": {
+        "url": "https://www.affarsvarlden.se/rss.xml"
+      }
+    },
+    {
+      "id": "n_6",
+      "name": "HTTP — NewsAPI SE",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -180,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://newsapi.org/v2/everything",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "(OMX OR Stockholmsbörsen OR Saab OR Ericsson OR Volvo OR \"svensk bank\" OR \"svenskt fastighetsbolag\" OR nordisk energi)"
+            },
+            {
+              "name": "language",
+              "value": "sv"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
+            },
+            {
+              "name": "pageSize",
+              "value": "20"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "",
+          "name": "NewsAPI (Query Auth)"
+        }
+      }
+    },
+    {
+      "id": "n_7",
+      "name": "Flatten NewsAPI SE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || ''\n  }\n}));"
+      }
+    },
+    {
+      "id": "n_8",
+      "name": "Merge SE — RSS",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        -120
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 3
+      }
+    },
+    {
+      "id": "n_9",
+      "name": "Merge SE — All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        340,
+        20
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2
+      }
+    },
+    {
+      "id": "n_10",
+      "name": "Normalize & Tag — SE",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        20
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      runLabel: 'Morgonbrief — SE',\n      runKey: 'SE'\n    }\n  });\n}\nreturn output;"
+      }
+    },
+    {
+      "id": "n_11",
+      "name": "RSS — Reuters Business",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        660
+      ],
+      "parameters": {
+        "url": "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"
+      }
+    },
+    {
+      "id": "n_12",
+      "name": "RSS — MarketWatch",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        820
+      ],
+      "parameters": {
+        "url": "https://feeds.content.dowjones.io/public/rss/mw_topstories"
+      }
+    },
+    {
+      "id": "n_13",
+      "name": "RSS — OilPrice.com",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        980
+      ],
+      "parameters": {
+        "url": "https://oilprice.com/rss/main"
+      }
+    },
+    {
+      "id": "n_14",
+      "name": "RSS — Kitco News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1140
+      ],
+      "parameters": {
+        "url": "https://www.kitco.com/rss/KitcoNews.xml"
+      }
+    },
+    {
+      "id": "n_15",
+      "name": "RSS — TechCrunch",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1300
+      ],
+      "parameters": {
+        "url": "https://techcrunch.com/feed/"
+      }
+    },
+    {
+      "id": "n_16",
+      "name": "HTTP — NewsAPI Global",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -180,
+        1460
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://newsapi.org/v2/everything",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "\"AI stocks\" OR \"quantum computing\" OR \"defense stocks\" OR \"banking sector\" OR \"gold price\" OR \"oil price\""
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
+            },
+            {
+              "name": "pageSize",
+              "value": "30"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "",
+          "name": "NewsAPI (Query Auth)"
+        }
+      }
+    },
+    {
+      "id": "n_17",
+      "name": "Flatten NewsAPI Global",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        1460
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || ''\n  }\n}));"
+      }
+    },
+    {
+      "id": "n_18",
+      "name": "Merge Global — RSS",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        980
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 5
+      }
+    },
+    {
+      "id": "n_19",
+      "name": "Merge Global — All Sources",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        340,
+        1120
+      ],
+      "parameters": {
+        "mode": "append",
+        "numberInputs": 2
+      }
+    },
+    {
+      "id": "n_20",
+      "name": "Normalize & Tag — Global",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        600,
+        1120
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      runLabel: 'Kvällsbrief — Global',\n      runKey: 'Global'\n    }\n  });\n}\nreturn output;"
+      }
+    },
+    {
+      "id": "n_21",
+      "name": "Build Article Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        570
+      ],
+      "parameters": {
+        "jsCode": "const SYSTEM_PROMPT = \"Du är en finansiell nyhetsanalytiker specialiserad på att identifiera potentiella investeringsmöjligheter (köp/sälj-signaler) genom att läsa nyhetsartiklar. Du arbetar åt en privat investerare som vill ha snabb, ärlig och konkret bedömning — inte allmänt hausse-prat.\\n\\nBRANSCHER ATT BEVAKA (klassificera varje relevant artikel till en av dessa):\\n1. AI/tech\\n2. Banker\\n3. Energi/olja\\n4. Guld/råvaror (inkl. litium, koppar, uran, silver)\\n5. Försvar\\n6. Quantum (spekulativ kategori — flagga alltid som högre risk)\\n\\nOm en artikel inte rör någon av dessa branscher eller inte innehåller någon agerbar signal ska den ignoreras helt (returnera ingen post för den).\\n\\nDIN UPPGIFT för varje relevant artikel:\\n1. Identifiera vilket bolag/bransch artikeln rör\\n2. Bedöm om det är en köpsignal, säljsignal, eller enbart bevakningsvärd (ingen tydlig riktning ännu)\\n3. Sätt en konfidensgrad: Hög / Medel / Låg\\n   - Hög: konkret, mätbar händelse med tydlig historisk koppling till kursrörelse (t.ex. förvärv, resultatöverraskning, stort kontrakt, regulatoriskt godkännande)\\n   - Medel: relevant händelse men med osäker eller indirekt påverkan\\n   - Låg: spekulativt, rykte, eller svag koppling till faktisk kurspåverkan\\n4. Skriv en kort motivering (max 2 meningar) — vad hände och varför det spelar roll\\n5. Ange källa (URL till originalartikeln)\\n\\nVIKTIGA PRINCIPER:\\n- Var ärligt återhållsam. De flesta nyheter är brus — det är okej att en dag inte ha några Hög-konfidens flaggor.\\n- Skilj tydligt på faktisk händelse (t.ex. \\\"bolag X rapporterade 15% vinstökning\\\") och spekulation (t.ex. \\\"analytiker tror att...\\\").\\n- Om samma bolag nämns i flera artiklar samma dag, slå ihop till en post med den starkaste signalen.\\n- Hitta aldrig på siffror, bolagsnamn eller händelser som inte finns i texten.\\n- Om osäker på om något är en verklig signal — sätt lägre konfidensgrad snarare än att gissa högt.\\n\\nOUTPUT-FORMAT — svara ENDAST med giltig JSON, ingen text utanför, i detta schema:\\n{\\n  \\\"flaggor\\\": [\\n    {\\n      \\\"bolag\\\": \\\"string\\\",\\n      \\\"bransch\\\": \\\"AI/tech | Banker | Energi/olja | Guld/råvaror | Försvar | Quantum\\\",\\n      \\\"signal\\\": \\\"Köp | Sälj | Bevaka\\\",\\n      \\\"konfidensgrad\\\": \\\"Hög | Medel | Låg\\\",\\n      \\\"motivering\\\": \\\"string (max 2 meningar)\\\",\\n      \\\"källa\\\": \\\"url\\\"\\n    }\\n  ]\\n}\\n\\nOm inga relevanta flaggor hittas i artikeln/artiklarna: returnera {\\\"flaggor\\\": []}\";\n\nconst items = $input.all();\nconst datum = new Date().toISOString().slice(0, 10);\n\nif (items.length === 0) {\n  return [{\n    json: {\n      systemPrompt: SYSTEM_PROMPT,\n      userMessage: 'Inga artiklar hittades i denna körning.',\n      runLabel: 'Okänd körning',\n      runKey: 'SE',\n      datum,\n      articleCount: 0\n    }\n  }];\n}\n\nconst runLabel = items[0].json.runLabel;\nconst runKey = items[0].json.runKey;\nconst MAX_ARTICLES = 40;\nconst trimmed = items.slice(0, MAX_ARTICLES);\n\nconst articles = trimmed.map((item, i) => {\n  const j = item.json;\n  return `${i + 1}. Titel: ${j.title}\\nIngress: ${j.ingress || '(ingen ingress tillgänglig)'}\\nLänk: ${j.link}`;\n}).join('\\n\\n');\n\nconst userMessage = `Körning: ${runLabel}\\nDatum: ${datum}\\nAntal artiklar i denna batch: ${trimmed.length}\\n\\nAnalysera artiklarna nedan enligt instruktionerna i systempromptet och returnera ENDAST giltig JSON enligt schemat — ingen text utanför JSON-objektet.\\n\\n${articles}`;\n\nreturn [{\n  json: {\n    systemPrompt: SYSTEM_PROMPT,\n    userMessage,\n    runLabel,\n    runKey,\n    datum,\n    articleCount: trimmed.length\n  }\n}];"
+      }
+    },
+    {
+      "id": "n_22",
+      "name": "Claude — Analysera Artiklar",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1140,
+        570
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 4096, system: $json.systemPrompt, messages: [{ role: 'user', content: $json.userMessage }] }) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Anthropic API (Header Auth)"
+        }
+      }
+    },
+    {
+      "id": "n_23",
+      "name": "Parsa Claude-svar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        570
+      ],
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\nconst upstream = $('Build Article Batch').first().json;\n\nlet flaggor = [];\ntry {\n  const textBlock = (response.content || []).find(c => c.type === 'text');\n  const raw = textBlock ? textBlock.text : '{}';\n  const parsed = JSON.parse(raw);\n  flaggor = Array.isArray(parsed.flaggor) ? parsed.flaggor : [];\n} catch (e) {\n  flaggor = [];\n}\n\nreturn [{\n  json: {\n    flaggor,\n    datum: upstream.datum,\n    körning: upstream.runLabel,\n    runKey: upstream.runKey,\n    articleCount: upstream.articleCount,\n    flagCount: flaggor.length\n  }\n}];"
+      }
+    },
+    {
+      "id": "n_24",
+      "name": "Split Out — Flaggor",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        380
+      ],
+      "parameters": {
+        "fieldToSplitOut": "flaggor",
+        "include": "allOtherFields"
+      }
+    },
+    {
+      "id": "n_25",
+      "name": "Google Sheets — Logga Flagga",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1920,
+        380
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list",
+          "cachedResultName": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Blad1",
+          "mode": "list",
+          "cachedResultName": "Blad1"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Datum": "={{$json.datum}}",
+            "Körning (SE/Global)": "={{$json.körning}}",
+            "Bolag": "={{$json.bolag}}",
+            "Bransch": "={{$json.bransch}}",
+            "Signal": "={{$json.signal}}",
+            "Konfidensgrad": "={{$json.konfidensgrad}}",
+            "Motivering": "={{$json.motivering}}",
+            "Källa": "={{$json.källa}}",
+            "Utfall": ""
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "id": "n_26",
+      "name": "Bygg Sammanställning",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1660,
+        760
+      ],
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\nconst flaggor = data.flaggor || [];\nconst datum = data.datum;\nconst körning = data.körning;\nconst articleCount = data.articleCount || 0;\n\nconst confOrder = { 'Hög': 0, 'Medel': 1, 'Låg': 2 };\nconst köp = flaggor.filter(f => f.signal === 'Köp').sort((a, b) => (confOrder[a.konfidensgrad] ?? 3) - (confOrder[b.konfidensgrad] ?? 3));\nconst bevaka = flaggor.filter(f => f.signal === 'Bevaka');\nconst sälj = flaggor.filter(f => f.signal === 'Sälj');\nconst topp = flaggor.find(f => f.konfidensgrad === 'Hög') || null;\nconst confEmoji = { 'Hög': '🟢', 'Medel': '🟡', 'Låg': '🔴' };\n\nlet html = `<h2>📊 DAGLIG MARKNADSBRIEF — ${datum} — ${körning}</h2>`;\n\nif (topp) {\n  html += `<p><strong>🟢 TOPP-FLAGGA</strong><br>${topp.bolag} — ${topp.bransch} — Konfidensgrad: Hög<br>${topp.motivering}<br>→ Signal: ${topp.signal} | Källa: <a href=\"${topp.källa}\">${topp.källa}</a></p><hr>`;\n}\n\nhtml += '<p><strong>📈 MÖJLIGHETER (rankade efter konfidensgrad)</strong></p><ol>';\nif (köp.length === 0) {\n  html += '<li>Inga köpsignaler idag.</li>';\n} else {\n  köp.forEach(f => {\n    html += `<li>${f.bolag} — ${f.bransch} — ${confEmoji[f.konfidensgrad] || ''} ${f.konfidensgrad}<br>Vad: ${f.motivering}<br>Källa: <a href=\"${f.källa}\">${f.källa}</a></li>`;\n  });\n}\nhtml += '</ol><hr>';\n\nhtml += '<p><strong>⚠️ BEVAKA (svagare signaler)</strong></p><ul>';\nif (bevaka.length === 0) {\n  html += '<li>Inga bevakningsposter idag.</li>';\n} else {\n  bevaka.forEach(f => { html += `<li>${f.bolag}: ${f.motivering}</li>`; });\n}\nhtml += '</ul><hr>';\n\nhtml += '<p><strong>🔴 RISKFLAGGOR (negativa nyheter)</strong></p><ul>';\nif (sälj.length === 0) {\n  html += '<li>Inga riskflaggor idag.</li>';\n} else {\n  sälj.forEach(f => { html += `<li>${f.bolag}: ${f.motivering}</li>`; });\n}\nhtml += '</ul><hr>';\n\nhtml += `<p>📉 Sammanfattning: ${articleCount} artiklar skannade, ${flaggor.length} flaggor genererade.</p>`;\n\nconst subject = `📊 Marknadsbrief — ${datum} — ${körning}`;\n\nreturn [{ json: { subject, htmlBody: html } }];"
+      }
+    },
+    {
+      "id": "n_27",
+      "name": "Gmail — Skicka Sammanställning",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1920,
+        760
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "zejneliadrian@icloud.com",
+        "subject": "={{$json.subject}}",
+        "emailType": "html",
+        "message": "={{$json.htmlBody}}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "id": "sticky_28",
+      "name": "Note — Setup & Credentials",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -420
+      ],
+      "parameters": {
+        "content": "## Setup — 4 credentials krävs\n\n1. **NewsAPI (Query Auth)** — Header/Query Auth-credential i n8n: Name = `apiKey`, Value = din NewsAPI-nyckel. Kopplas på båda \"HTTP — NewsAPI …\"-noderna.\n2. **Anthropic API (Header Auth)** — Header Auth-credential: Name = `x-api-key`, Value = din Anthropic API-nyckel. Kopplas på \"Claude — Analysera Artiklar\".\n3. **Google Sheets account** — OAuth2, koppla på \"Google Sheets — Logga Flagga\". Fyll i ditt Sheet-ID och bladnamn i noden.\n4. **Gmail account** — OAuth2, koppla på \"Gmail — Skicka Sammanställning\". Byt mottagaradress vid behov.\n\nWorkflow-inställningar → sätt Timezone till **Europe/Stockholm** så att 07:00/17:00 blir korrekt lokal tid året runt.",
+        "height": 300,
+        "width": 780,
+        "color": 4
+      }
+    },
+    {
+      "id": "sticky_29",
+      "name": "Varning — SE-källor ej verifierade",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -460,
+        -100
+      ],
+      "parameters": {
+        "content": "⚠️ Di.se, Placera.se och Affärsvärlden saknar (vad jag kunde hitta) officiellt dokumenterade publika RSS-URL:er. URL:erna här är bästa gissning utifrån vanliga mönster — öppna varje länk i webbläsaren innan skarp drift och byt ut om den inte returnerar giltig XML. Om ingen fungerar, ta bort noden och förlita dig på NewsAPI-sökningen istället.",
+        "height": 260,
+        "width": 420,
+        "color": 3
+      }
+    },
+    {
+      "id": "sticky_30",
+      "name": "Varning — Global-källor: status",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        560
+      ],
+      "parameters": {
+        "content": "✅ Verifierat fungerande vid test: MarketWatch, OilPrice.com, TechCrunch.\n\n⚠️ Ej verifierat: Reuters Business (Reuters lade ner de flesta publika RSS-flöden ~2020 — denna URL är institutionens feed och kan kräva byte) och Kitco News (ingen stabil publik RSS hittad). Testa båda i webbläsaren; om de inte fungerar, ta bort noden — NewsAPI-sökningen täcker ändå AI/bank/energi/quantum-nyckelorden.",
+        "height": 260,
+        "width": 460,
+        "color": 3
+      }
+    },
+    {
+      "id": "sticky_31",
+      "name": "Note — Modell & tokens",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1140,
+        780
+      ],
+      "parameters": {
+        "content": "Modell satt till `claude-sonnet-5`. Byt till en daterad snapshot-modell (t.ex. en `claude-sonnet-4-5-YYYYMMDD`-variant) om du vill låsa fast exakt modellversion. `max_tokens: 4096` bör räcka för flera flaggor — höj om Claude-svaret klipps av (kolla `stop_reason` i svaret).",
+        "height": 220,
+        "width": 340,
+        "color": 6
+      }
+    },
+    {
+      "id": "sticky_32",
+      "name": "Note — Google Sheets-kolumner",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        180
+      ],
+      "parameters": {
+        "content": "Skapa bladet med rubrikraden EXAKT:\nDatum | Körning (SE/Global) | Bolag | Bransch | Signal | Konfidensgrad | Motivering | Källa | Utfall\n\n\"Utfall\" lämnas tom — fylls i manuellt av dig i efterhand.",
+        "height": 180,
+        "width": 340,
+        "color": 7
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger — 07:00 SE": {
+      "main": [
+        [
+          {
+            "node": "RSS — Di.se",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Placera.se",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Affärsvärlden",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP — NewsAPI SE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — NewsAPI SE": {
+      "main": [
+        [
+          {
+            "node": "Flatten NewsAPI SE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Di.se": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Placera.se": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS — Affärsvärlden": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge SE — RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten NewsAPI SE": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — All Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge SE — All Sources": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Tag — SE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger — 17:00 Global": {
+      "main": [
+        [
+          {
+            "node": "RSS — Reuters Business",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — MarketWatch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — OilPrice.com",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Kitco News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — TechCrunch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP — NewsAPI Global",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — NewsAPI Global": {
+      "main": [
+        [
+          {
+            "node": "Flatten NewsAPI Global",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Reuters Business": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — MarketWatch": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS — OilPrice.com": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "RSS — Kitco News": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "RSS — TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Merge Global — RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Flatten NewsAPI Global": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — All Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Global — All Sources": {
+      "main": [
+        [
+          {
+            "node": "Normalize & Tag — Global",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Tag — SE": {
+      "main": [
+        [
+          {
+            "node": "Build Article Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize & Tag — Global": {
+      "main": [
+        [
+          {
+            "node": "Build Article Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Article Batch": {
+      "main": [
+        [
+          {
+            "node": "Claude — Analysera Artiklar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude — Analysera Artiklar": {
+      "main": [
+        [
+          {
+            "node": "Parsa Claude-svar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parsa Claude-svar": {
+      "main": [
+        [
+          {
+            "node": "Split Out — Flaggor",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Bygg Sammanställning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out — Flaggor": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets — Logga Flagga",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bygg Sammanställning": {
+      "main": [
+        [
+          {
+            "node": "Gmail — Skicka Sammanställning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Stockholm"
+  },
+  "pinData": {}
+}
