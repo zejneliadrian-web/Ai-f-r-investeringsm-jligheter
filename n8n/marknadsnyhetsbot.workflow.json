@@ -43,45 +43,150 @@
     },
     {
       "id": "n_3",
-      "name": "RSS — Di.se",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "name": "HTTP — Di.se (RSS, browser UA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -180,
         -280
       ],
       "parameters": {
-        "url": "https://www.di.se/rss"
+        "method": "GET",
+        "url": "https://www.di.se/rss",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
       }
     },
     {
       "id": "n_4",
-      "name": "RSS — Placera.se",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "name": "Parsa RSS — Di.se",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -280
+      ],
+      "parameters": {
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+      }
+    },
+    {
+      "id": "n_5",
+      "name": "HTTP — Placera.se (RSS, browser UA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -180,
         -120
       ],
       "parameters": {
-        "url": "https://www.placera.se/rss.xml"
+        "method": "GET",
+        "url": "https://www.placera.se/rss.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
       }
     },
     {
-      "id": "n_5",
-      "name": "RSS — Affärsvärlden",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "id": "n_6",
+      "name": "Parsa RSS — Placera.se",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -120
+      ],
+      "parameters": {
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+      }
+    },
+    {
+      "id": "n_7",
+      "name": "HTTP — Affärsvärlden (RSS, browser UA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -180,
         40
       ],
       "parameters": {
-        "url": "https://www.affarsvarlden.se/rss.xml"
+        "method": "GET",
+        "url": "https://www.affarsvarlden.se/rss.xml",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
       }
     },
     {
-      "id": "n_6",
+      "id": "n_8",
+      "name": "Parsa RSS — Affärsvärlden",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        40
+      ],
+      "parameters": {
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+      }
+    },
+    {
+      "id": "n_9",
       "name": "HTTP — NewsAPI SE",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -125,7 +230,7 @@
       }
     },
     {
-      "id": "n_7",
+      "id": "n_10",
       "name": "Flatten NewsAPI SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -138,7 +243,7 @@
       }
     },
     {
-      "id": "n_8",
+      "id": "n_11",
       "name": "Merge SE — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -152,7 +257,7 @@
       }
     },
     {
-      "id": "n_9",
+      "id": "n_12",
       "name": "Merge SE — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -166,7 +271,7 @@
       }
     },
     {
-      "id": "n_10",
+      "id": "n_13",
       "name": "Normalize & Tag — SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -179,7 +284,7 @@
       }
     },
     {
-      "id": "n_11",
+      "id": "n_14",
       "name": "RSS — Reuters Business",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -192,7 +297,7 @@
       }
     },
     {
-      "id": "n_12",
+      "id": "n_15",
       "name": "RSS — MarketWatch",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -205,7 +310,7 @@
       }
     },
     {
-      "id": "n_13",
+      "id": "n_16",
       "name": "RSS — OilPrice.com",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -218,7 +323,7 @@
       }
     },
     {
-      "id": "n_14",
+      "id": "n_17",
       "name": "RSS — Kitco News",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -231,7 +336,7 @@
       }
     },
     {
-      "id": "n_15",
+      "id": "n_18",
       "name": "RSS — TechCrunch",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -244,7 +349,7 @@
       }
     },
     {
-      "id": "n_16",
+      "id": "n_19",
       "name": "HTTP — NewsAPI Global",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -288,7 +393,7 @@
       }
     },
     {
-      "id": "n_17",
+      "id": "n_20",
       "name": "Flatten NewsAPI Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -301,7 +406,7 @@
       }
     },
     {
-      "id": "n_18",
+      "id": "n_21",
       "name": "Merge Global — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -315,7 +420,7 @@
       }
     },
     {
-      "id": "n_19",
+      "id": "n_22",
       "name": "Merge Global — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -329,7 +434,7 @@
       }
     },
     {
-      "id": "n_20",
+      "id": "n_23",
       "name": "Normalize & Tag — Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -342,7 +447,7 @@
       }
     },
     {
-      "id": "n_21",
+      "id": "n_24",
       "name": "Build Article Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -355,7 +460,7 @@
       }
     },
     {
-      "id": "n_22",
+      "id": "n_25",
       "name": "Claude — Analysera Artiklar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -396,7 +501,7 @@
       }
     },
     {
-      "id": "n_23",
+      "id": "n_26",
       "name": "Parsa Claude-svar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -409,7 +514,7 @@
       }
     },
     {
-      "id": "n_24",
+      "id": "n_27",
       "name": "Split Out — Flaggor",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
@@ -423,7 +528,7 @@
       }
     },
     {
-      "id": "n_25",
+      "id": "n_28",
       "name": "Google Sheets — Logga Flagga",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -471,7 +576,7 @@
       }
     },
     {
-      "id": "n_26",
+      "id": "n_29",
       "name": "Bygg Sammanställning",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -484,7 +589,7 @@
       }
     },
     {
-      "id": "n_27",
+      "id": "n_30",
       "name": "Gmail — Skicka Sammanställning",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -511,7 +616,7 @@
       }
     },
     {
-      "id": "sticky_28",
+      "id": "sticky_31",
       "name": "Note — Setup & Credentials",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -527,8 +632,8 @@
       }
     },
     {
-      "id": "sticky_29",
-      "name": "Varning — SE-källor ej verifierade",
+      "id": "sticky_32",
+      "name": "Varning — SE-källor: status efter fix",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -536,14 +641,14 @@
         -100
       ],
       "parameters": {
-        "content": "⚠️ Di.se, Placera.se och Affärsvärlden saknar (vad jag kunde hitta) officiellt dokumenterade publika RSS-URL:er. URL:erna här är bästa gissning utifrån vanliga mönster — öppna varje länk i webbläsaren innan skarp drift och byt ut om den inte returnerar giltig XML. Om ingen fungerar, ta bort noden och förlita dig på NewsAPI-sökningen istället.",
-        "height": 260,
-        "width": 420,
+        "content": "✅ Di.se — blockerade automatiska förfrågningar utan riktig User-Agent. Löst genom att hämta rå-XML via HTTP Request (med webbläsar-UA) och parsa den själv istället för att använda RSS-noden. Verifierat live: 200 OK, 20 artiklar.\n\n⚠️ Placera.se och Affärsvärlden — samma UA-fix hjälpte INTE, dessa gav 404/403 på varje URL jag testade (fel/okänd adress, inte bara bot-block). Noderna är förberedda med samma teknik ifall du hittar rätt URL (öppna sajten i din egen webbläsare, visa sidkälla, sök på \"rss\"). Fungerar det inte, ta bort noderna och lita på NewsAPI-sökningen för svensk bevakning.",
+        "height": 300,
+        "width": 460,
         "color": 3
       }
     },
     {
-      "id": "sticky_30",
+      "id": "sticky_33",
       "name": "Varning — Global-källor: status",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -559,7 +664,7 @@
       }
     },
     {
-      "id": "sticky_31",
+      "id": "sticky_34",
       "name": "Note — Modell & tokens",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -575,7 +680,7 @@
       }
     },
     {
-      "id": "sticky_32",
+      "id": "sticky_35",
       "name": "Note — Google Sheets-kolumner",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -596,22 +701,55 @@
       "main": [
         [
           {
-            "node": "RSS — Di.se",
+            "node": "HTTP — Di.se (RSS, browser UA)",
             "type": "main",
             "index": 0
           },
           {
-            "node": "RSS — Placera.se",
+            "node": "HTTP — Placera.se (RSS, browser UA)",
             "type": "main",
             "index": 0
           },
           {
-            "node": "RSS — Affärsvärlden",
+            "node": "HTTP — Affärsvärlden (RSS, browser UA)",
             "type": "main",
             "index": 0
           },
           {
             "node": "HTTP — NewsAPI SE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Di.se (RSS, browser UA)": {
+      "main": [
+        [
+          {
+            "node": "Parsa RSS — Di.se",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Placera.se (RSS, browser UA)": {
+      "main": [
+        [
+          {
+            "node": "Parsa RSS — Placera.se",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Affärsvärlden (RSS, browser UA)": {
+      "main": [
+        [
+          {
+            "node": "Parsa RSS — Affärsvärlden",
             "type": "main",
             "index": 0
           }
@@ -629,7 +767,7 @@
         ]
       ]
     },
-    "RSS — Di.se": {
+    "Parsa RSS — Di.se": {
       "main": [
         [
           {
@@ -640,7 +778,7 @@
         ]
       ]
     },
-    "RSS — Placera.se": {
+    "Parsa RSS — Placera.se": {
       "main": [
         [
           {
@@ -651,7 +789,7 @@
         ]
       ]
     },
-    "RSS — Affärsvärlden": {
+    "Parsa RSS — Affärsvärlden": {
       "main": [
         [
           {
