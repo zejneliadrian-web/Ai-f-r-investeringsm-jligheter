@@ -100,7 +100,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://www.placera.se/rss.xml",
+        "url": "https://www.placera.se/artiklar/rss.xml",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -641,8 +641,8 @@
         -100
       ],
       "parameters": {
-        "content": "✅ Di.se — blockerade automatiska förfrågningar utan riktig User-Agent. Löst genom att hämta rå-XML via HTTP Request (med webbläsar-UA) och parsa den själv istället för att använda RSS-noden. Verifierat live: 200 OK, 20 artiklar.\n\n⚠️ Placera.se och Affärsvärlden — samma UA-fix hjälpte INTE, dessa gav 404/403 på varje URL jag testade (fel/okänd adress, inte bara bot-block). Noderna är förberedda med samma teknik ifall du hittar rätt URL (öppna sajten i din egen webbläsare, visa sidkälla, sök på \"rss\"). Fungerar det inte, ta bort noderna och lita på NewsAPI-sökningen för svensk bevakning.",
-        "height": 300,
+        "content": "✅ Di.se — blockerade förfrågningar utan riktig User-Agent. Löst med HTTP Request (webbläsar-UA) + egen XML-parsning. Verifierat live: 200 OK, 20 artiklar.\n\n✅ Placera.se — samma sak, men URL:en var dessutom fel (var `/rss.xml`, rätt är `/artiklar/rss.xml`, hittad i sidans källkod). Verifierat live: 200 OK, 30 artiklar.\n\n⚠️ Affärsvärlden — fortfarande olöst. Blockerar även vanlig sidladdning för automatiska verktyg (anslutningen dör direkt, verkar vara Cloudflare-liknande skydd bortom bara User-Agent). Noden är förberedd med samma HTTP+parse-teknik ifall du hittar rätt URL/lösning själv i webbläsaren. Fungerar det inte, ta bort noden och lita på NewsAPI för den bevakningen.",
+        "height": 320,
         "width": 460,
         "color": 3
       }

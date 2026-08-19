@@ -13,7 +13,7 @@ Två oberoende triggerkedjor (SE 07:00 och Global 17:00) samlar in, normaliserar
 
 ```
 Schedule 07:00 SE ──┬─ HTTP Di.se → Parsa RSS ─────────┐
-                     ├─ HTTP Placera.se → Parsa RSS ────┼─ Merge SE (RSS) ─┐
+                     ├─ HTTP Placera.se → Parsa RSS ────┼─ Merge SE (RSS) ─┐  ✅ Di.se + Placera.se bekräftat fungerande
                      ├─ HTTP Affärsvärlden → Parsa RSS ─┘     ├─ Merge SE (alla källor) ─ Normalize & Tag SE ─┐
                      └─ HTTP NewsAPI SE ─── Flatten NewsAPI SE ┘                                              │
                                                                                                                 ├─ Build Article Batch ─ Claude (analys) ─ Parsa Claude-svar ─┬─ Split Out (flaggor) ─ Google Sheets (append)
@@ -59,18 +59,18 @@ Alla fem stegen passerade (`ALL MOCK TESTS PASSED`). Det här bevisar logiken �
 Jag hämtade och kontrollerade varje RSS-URL live. Tre av de svenska källorna blockerade mina första försök — det visade sig bero på att sajten kollar `User-Agent`-headern och nekar förfrågningar som inte ser ut att komma från en vanlig webbläsare. n8n:s inbyggda RSS-nod kan inte skicka egna headers, så jag bytte ut de tre svenska källorna mot **HTTP Request (med en vanlig webbläsar-`User-Agent`) → en liten Code-nod som parsar RSS/Atom-XML:en själv**. Samma fält (title/länk/ingress) skickas vidare som tidigare, så resten av workflowet är opåverkat.
 
 **Verifierat fungerande efter fix (testade live med riktig data):**
-- **Di.se** — `https://www.di.se/rss` var faktiskt hela tiden en giltig adress; blockeringen var bara bot-skyddet. Med webbläsar-header: 200 OK, 20 artiklar hämtade och parsade korrekt (`n8n/README.md`-mockdatan nedan bygger på riktig Di.se-text).
+- **Di.se** — `https://www.di.se/rss` var faktiskt hela tiden en giltig adress; blockeringen var bara bot-skyddet. Med webbläsar-header: 200 OK, 20 artiklar hämtade och parsade korrekt.
+- **Placera.se** — den ursprungliga gissningen (`/rss.xml`) var fel adress. Rätt adress hittades i sidans källkod: `https://www.placera.se/artiklar/rss.xml`. Med webbläsar-header: 200 OK, 30 artiklar hämtade och parsade korrekt.
 - MarketWatch — `https://feeds.content.dowjones.io/public/rss/mw_topstories`
 - OilPrice.com — `https://oilprice.com/rss/main`
 - TechCrunch — `https://techcrunch.com/feed/`
 
-**Fortfarande inte lösta — header-tricket hjälpte inte här, det är fel/okänd URL, inte bot-block:**
-- **Placera.se** — testade `/rss.xml`, `/placera/rss.xml`, `/site/rss`, `/rss`, `/nyheter/rss`, `/rss/nyheter.xml` m.fl. — alla gav 404. Ingen dokumenterad publik RSS hittad.
-- **Affärsvärlden** — testade `/rss.xml`, `/rss`, `/feed`, `/feed/` — 403/404 på samtliga (nginx nekar även med webbläsar-header).
+**Fortfarande inte löst:**
+- **Affärsvärlden** — testade `/rss.xml`, `/rss`, `/feed`, `/feed/` (403/404) och till och med bara startsidan, som gav en omdirigering (302) vars mål aktivt stryper anslutningen efter under en sekund. Det tyder på ett skydd bortom bara User-Agent-kontroll (typ Cloudflare), som header-tricket inte kan lösa. Noden är förberedd med samma HTTP+parse-teknik ifall du hittar en lösning själv i webbläsaren.
 - **Reuters Business** — Reuters lade ner nästan alla publika RSS-flöden runt 2020. URL:en jag satt in är deras institutionsflöde (`reutersagency.com`), som jag inte kunde nå för verifiering.
 - **Kitco News** — ingen fungerande publik RSS hittad efter flera försök.
 
-Noderna för Placera.se och Affärsvärlden är förberedda med samma HTTP+parse-teknik (så headern redan finns på plats), men URL:en behöver bytas ut. **Om du vill ha rätt adress:** öppna sajten i din egen webbläsare, högerklicka → "Visa sidkälla" och sök på "rss" — då hittar du oftast den riktiga länken om en finns. Reuters och Kitco står kvar som vanliga RSS-noder (ej ombyggda) tills vi bestämmer om de ska bytas ut mot t.ex. CNBC/Defense News, som jag föreslog tidigare.
+Reuters och Kitco står kvar som vanliga RSS-noder (ej ombyggda) tills vi bestämmer om de ska bytas ut mot t.ex. CNBC/Defense News, som jag föreslog tidigare.
 
 Om en källa inte går att lösa: ta bort den noden i n8n — NewsAPI-sökningen täcker redan branschbevakningen brett och resten av workflowet påverkas inte, eftersom varje källnod är oberoende innan Merge-steget.
 
