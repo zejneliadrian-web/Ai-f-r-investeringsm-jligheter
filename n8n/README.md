@@ -12,18 +12,20 @@
 Två oberoende triggerkedjor (SE 07:00 och Global 17:00) samlar in, normaliserar och taggar artiklar var för sig — sedan går båda in i **samma delade pipeline** (Claude-analys → parsning → loggning → mailutskick), precis som du bad om ("återanvänd samma Claude-analysnod"). Endast en av kedjorna kör åt gången (styrs av respektive schema), så det delade steget ("Build Article Batch") körs en gång per exekvering oavsett vilken gren som triggade den.
 
 ```
-Schedule 07:00 SE ──┬─ HTTP Di.se → Parsa RSS ─────────┐
-                     ├─ HTTP Placera.se → Parsa RSS ────┼─ Merge SE (RSS) ─┐  ✅ Di.se + Placera.se bekräftat fungerande
-                     ├─ HTTP Affärsvärlden → Parsa RSS ─┘     ├─ Merge SE (alla källor) ─ Normalize & Tag SE ─┐
-                     └─ HTTP NewsAPI SE ─── Flatten NewsAPI SE ┘                                              │
-                                                                                                                ├─ Build Article Batch ─ Claude (analys) ─ Parsa Claude-svar ─┬─ Split Out (flaggor) ─ Google Sheets (append)
-Schedule 17:00 Global ┬─ RSS Reuters ───────┐                                                                 │                                                              └─ Bygg Sammanställning ─ Gmail (send)
-                       ├─ RSS MarketWatch ───┼─ Merge Global (RSS) ─┐
-                       ├─ RSS OilPrice.com ──┤                      ├─ Merge Global (alla källor) ─ Normalize & Tag Global ─┘
-                       ├─ RSS Kitco News ────┤                      │
-                       ├─ RSS TechCrunch ────┘                      │
-                       └─ HTTP NewsAPI Global ─ Flatten NewsAPI Global ┘
+Schedule 07:00 SE ──┬─ HTTP Di.se → Parsa RSS ──────────┐
+                     ├─ HTTP Placera.se → Parsa RSS ─────┼─ Merge SE (RSS) ─┐
+                     ├─ RSS Breakit ──────────────────────┘                 ├─ Merge SE (alla källor) ─ Normalize & Tag SE ─┐
+                     └─ HTTP NewsAPI SE ─── Flatten NewsAPI SE ─────────────┘                                              │
+                                                                                                                              ├─ Build Article Batch ─ Claude (analys) ─ Parsa Claude-svar ─┬─ Split Out (flaggor) ─ Google Sheets (append)
+Schedule 17:00 Global ┬─ HTTP Yahoo Finance → Parsa RSS ──┐                                                                 │                                                              └─ Bygg Sammanställning ─ Gmail (send)
+                       ├─ RSS MarketWatch ─────────────────┼─ Merge Global (RSS) ─┐
+                       ├─ RSS OilPrice.com ─────────────────┤                      ├─ Merge Global (alla källor) ─ Normalize & Tag Global ─┘
+                       ├─ HTTP Mining.com → Parsa RSS ──────┤                      │
+                       ├─ RSS TechCrunch ────────────────────┘                     │
+                       └─ HTTP NewsAPI Global ─ Flatten NewsAPI Global ────────────┘
 ```
+
+**Alla 8 källor är verifierade live och fungerar** (se tabellen nedan) — inga döda RSS-noder kvar i workflowet.
 
 ## Credentials du behöver lägga in (4 st)
 
@@ -54,25 +56,24 @@ Jag har kört hela pipeline-logiken (Code-noderna, extraherade rakt ur workflow-
 
 Alla fem stegen passerade (`ALL MOCK TESTS PASSED`). Det här bevisar logiken — det bevisar inte att RSS-URL:erna eller de riktiga API-nycklarna fungerar; det måste testas i n8n med riktiga credentials (kör workflowet manuellt med "Execute Workflow" per nod).
 
-## ⚠️ RSS-källor: status efter verifiering + bot-skydds-fix
+## ✅ RSS-källor — alla verifierade live
 
-Jag hämtade och kontrollerade varje RSS-URL live. Tre av de svenska källorna blockerade mina första försök — det visade sig bero på att sajten kollar `User-Agent`-headern och nekar förfrågningar som inte ser ut att komma från en vanlig webbläsare. n8n:s inbyggda RSS-nod kan inte skicka egna headers, så jag bytte ut de tre svenska källorna mot **HTTP Request (med en vanlig webbläsar-`User-Agent`) → en liten Code-nod som parsar RSS/Atom-XML:en själv**. Samma fält (title/länk/ingress) skickas vidare som tidigare, så resten av workflowet är opåverkat.
+Jag hämtade och kontrollerade varje källa på riktigt (inte bara antog att URL:en stämde), och bytte ut de två som var genuint döda. Så här ser det ut nu:
 
-**Verifierat fungerande efter fix (testade live med riktig data):**
-- **Di.se** — `https://www.di.se/rss` var faktiskt hela tiden en giltig adress; blockeringen var bara bot-skyddet. Med webbläsar-header: 200 OK, 20 artiklar hämtade och parsade korrekt.
-- **Placera.se** — den ursprungliga gissningen (`/rss.xml`) var fel adress. Rätt adress hittades i sidans källkod: `https://www.placera.se/artiklar/rss.xml`. Med webbläsar-header: 200 OK, 30 artiklar hämtade och parsade korrekt.
-- MarketWatch — `https://feeds.content.dowjones.io/public/rss/mw_topstories`
-- OilPrice.com — `https://oilprice.com/rss/main`
-- TechCrunch — `https://techcrunch.com/feed/`
+| Källa | Status | Teknik | Verifierat |
+|---|---|---|---|
+| Di.se | Fixad — blockerade förfrågningar utan webbläsar-header | HTTP + parse | 200 OK, 20 artiklar |
+| Placera.se | Fixad — fel URL (`/rss.xml` → rätt är `/artiklar/rss.xml`, hittad i sidkällan) | HTTP + parse | 200 OK, 30 artiklar |
+| ~~Affärsvärlden~~ → **Breakit** | Affärsvärlden borttagen (oändlig omdirigeringsloop, Cloudflare-liknande skydd som inte går att lösa med headers). Ersatt med Breakit (svensk tech/startup-nyheter) | Plain RSS-nod | 200 OK, 17 artiklar |
+| MarketWatch | Fungerade från början | Plain RSS-nod | 200 OK, 10 artiklar |
+| OilPrice.com | Fungerade från början | Plain RSS-nod | 200 OK, 15 artiklar |
+| ~~Reuters Business~~ → **Yahoo Finance** | Reuters borttaget (inget publikt RSS-flöde kvar sedan ~2020, ingen feed-länk hittad någonstans på deras sajt). Ersatt med Yahoo Finance (bred global marknadsbevakning) | HTTP + parse | 200 OK, 50 artiklar |
+| ~~Kitco News~~ → **Mining.com** | Kitco borttaget (ingen RSS-länk i sidkällan, alla gissade adresser 404). Ersatt med Mining.com (gruv-/metall-/råvarunyheter — samma nisch som Kitco skulle täckt) | HTTP + parse | 200 OK, 36 artiklar |
+| TechCrunch | Fungerade från början | Plain RSS-nod | 200 OK, 20 artiklar |
 
-**Fortfarande inte löst:**
-- **Affärsvärlden** — testade `/rss.xml`, `/rss`, `/feed`, `/feed/` (403/404) och till och med bara startsidan, som gav en omdirigering (302) vars mål aktivt stryper anslutningen efter under en sekund. Det tyder på ett skydd bortom bara User-Agent-kontroll (typ Cloudflare), som header-tricket inte kan lösa. Noden är förberedd med samma HTTP+parse-teknik ifall du hittar en lösning själv i webbläsaren.
-- **Reuters Business** — Reuters lade ner nästan alla publika RSS-flöden runt 2020. URL:en jag satt in är deras institutionsflöde (`reutersagency.com`), som jag inte kunde nå för verifiering.
-- **Kitco News** — ingen fungerande publik RSS hittad efter flera försök.
+**Teknisk bakgrund:** n8n:s inbyggda RSS Feed Read-nod kan inte skicka egna headers. De källor som blockerar en "vanlig" HTTP-klient (kollar `User-Agent`) går via **HTTP Request (med en riktig webbläsar-`User-Agent` + `Accept`-header) → en liten Code-nod som parsar RSS/Atom-XML:en själv** — det är samma teknik för alla fyra "HTTP + parse"-källor ovan, och samma kodsnutt (testad separat mot varje källas riktiga data). Källor som redan tog emot en vanlig förfrågan utan problem fick behålla den enklare inbyggda RSS-noden.
 
-Reuters och Kitco står kvar som vanliga RSS-noder (ej ombyggda) tills vi bestämmer om de ska bytas ut mot t.ex. CNBC/Defense News, som jag föreslog tidigare.
-
-Om en källa inte går att lösa: ta bort den noden i n8n — NewsAPI-sökningen täcker redan branschbevakningen brett och resten av workflowet påverkas inte, eftersom varje källnod är oberoende innan Merge-steget.
+Om en källa någon gång slutar fungera (sajter ändrar bot-skydd/URL:er över tid): ta bort den noden i n8n — varje källa är oberoende fram till Merge-steget, så resten av workflowet påverkas inte, och NewsAPI-sökningen ger ändå bred bevakning av branscherna.
 
 ## Tips / saker jag skulle ändra
 
@@ -82,6 +83,7 @@ Om en källa inte går att lösa: ta bort den noden i n8n — NewsAPI-sökningen
 4. **Modellnamnet `claude-sonnet-5`** är satt som en rimlig standard. Om du vill låsa en exakt, oföränderlig modellversion (så att en framtida modell-uppdatering inte påverkar dina resultat över tid när du utvärderar träffsäkerhet), byt till en daterad snapshot-modell-identifierare istället.
 5. **Ingen retry/felhantering på HTTP-anropen.** Om NewsAPI eller Claude API svarar med fel (t.ex. rate limit) stannar hela körningen och inget mail skickas den dagen — du märker det bara om du aktivt tittar i n8n:s execution-logg. Om du vill ha en varning istället, går det enkelt att lägga till en "Error Trigger"-workflow som mailar dig om en körning misslyckas.
 6. **Gmail auto-send, som du bad om** — inga bekräftelsesteg. Värt att dubbelkolla att `sendTo`-adressen i "Gmail — Skicka Sammanställning" alltid är rätt, eftersom det går direkt ut utan draft-steg.
+7. **Breakit är inte en 1:1-ersättning för Affärsvärlden** — Breakit är svensk tech/startup-bevakning, medan Affärsvärlden var bredare affärsjournalistik. Det ger faktiskt lite extra värde för "AI/tech"-kategorin på morgonkörningen (som annars saknade en dedikerad källa), men täcker inte banker/fastigheter/energi på samma sätt Affärsvärlden hade gjort — där gör Di.se, Placera.se och NewsAPI-sökningen jobbet istället.
 
 ## Modifierad prompt
 

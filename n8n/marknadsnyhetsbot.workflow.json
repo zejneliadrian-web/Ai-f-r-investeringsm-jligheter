@@ -139,54 +139,19 @@
     },
     {
       "id": "n_7",
-      "name": "HTTP — Affärsvärlden (RSS, browser UA)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "name": "RSS — Breakit",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
       "position": [
         -180,
         40
       ],
       "parameters": {
-        "method": "GET",
-        "url": "https://www.affarsvarlden.se/rss.xml",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "User-Agent",
-              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-            },
-            {
-              "name": "Accept",
-              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
-            }
-          ]
-        },
-        "options": {
-          "response": {
-            "response": {
-              "responseFormat": "text",
-              "outputPropertyName": "data"
-            }
-          }
-        }
+        "url": "https://www.breakit.se/feed/artiklar"
       }
     },
     {
       "id": "n_8",
-      "name": "Parsa RSS — Affärsvärlden",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -40,
-        40
-      ],
-      "parameters": {
-        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
-      }
-    },
-    {
-      "id": "n_9",
       "name": "HTTP — NewsAPI SE",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -230,7 +195,7 @@
       }
     },
     {
-      "id": "n_10",
+      "id": "n_9",
       "name": "Flatten NewsAPI SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -243,7 +208,7 @@
       }
     },
     {
-      "id": "n_11",
+      "id": "n_10",
       "name": "Merge SE — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -257,7 +222,7 @@
       }
     },
     {
-      "id": "n_12",
+      "id": "n_11",
       "name": "Merge SE — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -271,7 +236,7 @@
       }
     },
     {
-      "id": "n_13",
+      "id": "n_12",
       "name": "Normalize & Tag — SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -284,16 +249,51 @@
       }
     },
     {
-      "id": "n_14",
-      "name": "RSS — Reuters Business",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "id": "n_13",
+      "name": "HTTP — Yahoo Finance (RSS, browser UA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -180,
         660
       ],
       "parameters": {
-        "url": "https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best"
+        "method": "GET",
+        "url": "https://finance.yahoo.com/news/rssindex",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "n_14",
+      "name": "Parsa RSS — Yahoo Finance",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        660
+      ],
+      "parameters": {
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
       }
     },
     {
@@ -324,19 +324,54 @@
     },
     {
       "id": "n_17",
-      "name": "RSS — Kitco News",
-      "type": "n8n-nodes-base.rssFeedRead",
-      "typeVersion": 1.1,
+      "name": "HTTP — Mining.com (RSS, browser UA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         -180,
         1140
       ],
       "parameters": {
-        "url": "https://www.kitco.com/rss/KitcoNews.xml"
+        "method": "GET",
+        "url": "https://www.mining.com/feed/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept",
+              "value": "application/rss+xml, application/xml;q=0.9, */*;q=0.8"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
       }
     },
     {
       "id": "n_18",
+      "name": "Parsa RSS — Mining.com",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1140
+      ],
+      "parameters": {
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+      }
+    },
+    {
+      "id": "n_19",
       "name": "RSS — TechCrunch",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -349,7 +384,7 @@
       }
     },
     {
-      "id": "n_19",
+      "id": "n_20",
       "name": "HTTP — NewsAPI Global",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -393,7 +428,7 @@
       }
     },
     {
-      "id": "n_20",
+      "id": "n_21",
       "name": "Flatten NewsAPI Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -406,7 +441,7 @@
       }
     },
     {
-      "id": "n_21",
+      "id": "n_22",
       "name": "Merge Global — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -420,7 +455,7 @@
       }
     },
     {
-      "id": "n_22",
+      "id": "n_23",
       "name": "Merge Global — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -434,7 +469,7 @@
       }
     },
     {
-      "id": "n_23",
+      "id": "n_24",
       "name": "Normalize & Tag — Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -447,7 +482,7 @@
       }
     },
     {
-      "id": "n_24",
+      "id": "n_25",
       "name": "Build Article Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -460,7 +495,7 @@
       }
     },
     {
-      "id": "n_25",
+      "id": "n_26",
       "name": "Claude — Analysera Artiklar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -501,7 +536,7 @@
       }
     },
     {
-      "id": "n_26",
+      "id": "n_27",
       "name": "Parsa Claude-svar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -514,7 +549,7 @@
       }
     },
     {
-      "id": "n_27",
+      "id": "n_28",
       "name": "Split Out — Flaggor",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
@@ -528,7 +563,7 @@
       }
     },
     {
-      "id": "n_28",
+      "id": "n_29",
       "name": "Google Sheets — Logga Flagga",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -576,7 +611,7 @@
       }
     },
     {
-      "id": "n_29",
+      "id": "n_30",
       "name": "Bygg Sammanställning",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -589,7 +624,7 @@
       }
     },
     {
-      "id": "n_30",
+      "id": "n_31",
       "name": "Gmail — Skicka Sammanställning",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -616,7 +651,7 @@
       }
     },
     {
-      "id": "sticky_31",
+      "id": "sticky_32",
       "name": "Note — Setup & Credentials",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -632,8 +667,8 @@
       }
     },
     {
-      "id": "sticky_32",
-      "name": "Varning — SE-källor: status efter fix",
+      "id": "sticky_33",
+      "name": "Note — SE-källor: alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -641,15 +676,15 @@
         -100
       ],
       "parameters": {
-        "content": "✅ Di.se — blockerade förfrågningar utan riktig User-Agent. Löst med HTTP Request (webbläsar-UA) + egen XML-parsning. Verifierat live: 200 OK, 20 artiklar.\n\n✅ Placera.se — samma sak, men URL:en var dessutom fel (var `/rss.xml`, rätt är `/artiklar/rss.xml`, hittad i sidans källkod). Verifierat live: 200 OK, 30 artiklar.\n\n⚠️ Affärsvärlden — fortfarande olöst. Blockerar även vanlig sidladdning för automatiska verktyg (anslutningen dör direkt, verkar vara Cloudflare-liknande skydd bortom bara User-Agent). Noden är förberedd med samma HTTP+parse-teknik ifall du hittar rätt URL/lösning själv i webbläsaren. Fungerar det inte, ta bort noden och lita på NewsAPI för den bevakningen.",
+        "content": "✅ Di.se — blockerade förfrågningar utan riktig User-Agent. Löst med HTTP Request (webbläsar-UA) + egen XML-parsning. Verifierat: 200 OK, 20 artiklar.\n\n✅ Placera.se — samma sak, men URL:en var dessutom fel (var `/rss.xml`, rätt är `/artiklar/rss.xml`, hittad i sidans källkod). Verifierat: 200 OK, 30 artiklar.\n\n🔁 Affärsvärlden borttagen — hade en oändlig omdirigeringsloop för alla automatiska klienter (Cloudflare-liknande skydd, går inte att lösa med headers). Ersatt med Breakit (svensk tech/startup-bevakning), som fungerar med vilken klient som helst — verifierat: 200 OK, 17 artiklar.",
         "height": 320,
         "width": 460,
         "color": 3
       }
     },
     {
-      "id": "sticky_33",
-      "name": "Varning — Global-källor: status",
+      "id": "sticky_34",
+      "name": "Note — Global-källor: alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -657,14 +692,14 @@
         560
       ],
       "parameters": {
-        "content": "✅ Verifierat fungerande vid test: MarketWatch, OilPrice.com, TechCrunch.\n\n⚠️ Ej verifierat: Reuters Business (Reuters lade ner de flesta publika RSS-flöden ~2020 — denna URL är institutionens feed och kan kräva byte) och Kitco News (ingen stabil publik RSS hittad). Testa båda i webbläsaren; om de inte fungerar, ta bort noden — NewsAPI-sökningen täcker ändå AI/bank/energi/quantum-nyckelorden.",
-        "height": 260,
+        "content": "✅ MarketWatch, OilPrice.com, TechCrunch — fungerar med vilken klient som helst.\n\n🔁 Reuters Business borttagen — de har inget publikt RSS-flöde kvar överhuvudtaget (inget flödeslänk hittades någonstans på reutersagency.com). Ersatt med Yahoo Finance (bred global marknadsbevakning) — kräver webbläsar-UA, verifierat: 200 OK, 50 artiklar.\n\n🔁 Kitco News borttagen — ingen RSS-länk gick att hitta i sidans källkod. Ersatt med Mining.com (gruv-/metall-/råvarunyheter) — kräver webbläsar-UA, verifierat: 200 OK, 36 artiklar.",
+        "height": 300,
         "width": 460,
         "color": 3
       }
     },
     {
-      "id": "sticky_34",
+      "id": "sticky_35",
       "name": "Note — Modell & tokens",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -680,7 +715,7 @@
       }
     },
     {
-      "id": "sticky_35",
+      "id": "sticky_36",
       "name": "Note — Google Sheets-kolumner",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -711,7 +746,7 @@
             "index": 0
           },
           {
-            "node": "HTTP — Affärsvärlden (RSS, browser UA)",
+            "node": "RSS — Breakit",
             "type": "main",
             "index": 0
           },
@@ -739,17 +774,6 @@
         [
           {
             "node": "Parsa RSS — Placera.se",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP — Affärsvärlden (RSS, browser UA)": {
-      "main": [
-        [
-          {
-            "node": "Parsa RSS — Affärsvärlden",
             "type": "main",
             "index": 0
           }
@@ -789,7 +813,7 @@
         ]
       ]
     },
-    "Parsa RSS — Affärsvärlden": {
+    "RSS — Breakit": {
       "main": [
         [
           {
@@ -837,7 +861,7 @@
       "main": [
         [
           {
-            "node": "RSS — Reuters Business",
+            "node": "HTTP — Yahoo Finance (RSS, browser UA)",
             "type": "main",
             "index": 0
           },
@@ -852,7 +876,7 @@
             "index": 0
           },
           {
-            "node": "RSS — Kitco News",
+            "node": "HTTP — Mining.com (RSS, browser UA)",
             "type": "main",
             "index": 0
           },
@@ -863,6 +887,28 @@
           },
           {
             "node": "HTTP — NewsAPI Global",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Yahoo Finance (RSS, browser UA)": {
+      "main": [
+        [
+          {
+            "node": "Parsa RSS — Yahoo Finance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP — Mining.com (RSS, browser UA)": {
+      "main": [
+        [
+          {
+            "node": "Parsa RSS — Mining.com",
             "type": "main",
             "index": 0
           }
@@ -880,7 +926,7 @@
         ]
       ]
     },
-    "RSS — Reuters Business": {
+    "Parsa RSS — Yahoo Finance": {
       "main": [
         [
           {
@@ -913,7 +959,7 @@
         ]
       ]
     },
-    "RSS — Kitco News": {
+    "Parsa RSS — Mining.com": {
       "main": [
         [
           {
