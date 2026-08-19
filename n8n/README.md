@@ -5,21 +5,23 @@
 ## Importera
 
 1. n8n → **Workflows → Import from File** → välj `marknadsnyhetsbot.workflow.json`.
-2. Workflowet importeras inaktivt (`active: false`) med `timezone: Europe/Stockholm` redan satt i workflow-inställningarna, så 07:00/17:00 blir korrekt lokal tid året runt (även över DST-skiften).
+2. Workflowet importeras inaktivt (`active: false`) med `timezone: Europe/Stockholm` redan satt i workflow-inställningarna, så 09:00/18:00 blir korrekt lokal tid året runt (även över DST-skiften).
 
 ## Så hänger workflowet ihop
 
-Två oberoende triggerkedjor (SE 07:00 och Global 17:00) samlar in, normaliserar och taggar artiklar var för sig — sedan går båda in i **samma delade pipeline** (Claude-analys → parsning → loggning → mailutskick), precis som du bad om ("återanvänd samma Claude-analysnod"). Endast en av kedjorna kör åt gången (styrs av respektive schema), så det delade steget ("Build Article Batch") körs en gång per exekvering oavsett vilken gren som triggade den.
+Två oberoende triggerkedjor (SE 09:00 och Global 18:00) samlar in, normaliserar och taggar artiklar var för sig — sedan går båda in i **samma delade pipeline** (Claude-analys → parsning → loggning → mailutskick → push-notis), precis som du bad om ("återanvänd samma Claude-analysnod"). Endast en av kedjorna kör åt gången (styrs av respektive schema), så det delade steget ("Build Article Batch") körs en gång per exekvering oavsett vilken gren som triggade den.
 
 ```
-Schedule 07:00 SE ────── [8 SE-källor, se tabell] ─── Merge SE (RSS) ─┐
+Schedule 09:00 SE ────── [8 SE-källor, se tabell] ─── Merge SE (RSS) ─┐
                      └── HTTP NewsAPI SE → Flatten ────────────────────┼─ Merge SE (alla källor) ─ Normalize & Tag SE ─┐
                                                                                                                           │
                                                                                                                           ├─ Build Article Batch ─ Claude (analys) ─ Parsa Claude-svar ─┬─ Split Out (flaggor) ─ Google Sheets (append)
-Schedule 17:00 Global ── [11 Global-källor, se tabell] ─ Merge Global (RSS) ─┐                                          │                                                              └─ Bygg Sammanställning ─ Gmail (send)
+Schedule 18:00 Global ── [11 Global-källor, se tabell] ─ Merge Global (RSS) ─┐                                          │                                                              └─ Bygg Sammanställning ─ Gmail (send) ─ Notis (ntfy.sh push)
                      └── HTTP NewsAPI Global → Flatten ─────────────────────┼─ Merge Global (alla källor) ─ Normalize & Tag Global ─┘
                                                                              ┘
 ```
+
+**Push-notis:** efter att mailet skickats går en gratis push-notis (via ntfy.sh, inget konto krävs) till din telefon med texten **"Din marknadsanalys är klar"** — se sticky-noten "Note — Push-notis (ntfy.sh), inget konto krävs" i workflowet för hur du kopplar in din egen telefon (kräver bara att du installerar gratisappen ntfy och byter ett topic-namn i URL:en).
 
 **Alla 19 RSS-källor (8 SE + 11 Global), plus NewsAPI-sökningarna, är verifierade live och fungerar** — inga döda RSS-noder kvar i workflowet. Källorna för respektive marknad listas i tabellerna nedan.
 
@@ -33,6 +35,7 @@ Skapas under **n8n → Credentials → Add Credential**. Efter import måste du 
 | Anthropic API (Header Auth) | **Header Auth** | Name=`x-api-key`, Value=din Anthropic API-nyckel | `Claude — Analysera Artiklar` |
 | Google Sheets account | **Google Sheets OAuth2** | Standard Google-inloggning | `Google Sheets — Logga Flagga` |
 | Gmail account | **Gmail OAuth2** | Standard Google-inloggning | `Gmail — Skicka Sammanställning` |
+| *(inget konto)* | — | Byt topic-namn i URL:en (se sticky-not) | `Notis — ntfy.sh (push)` |
 
 Efter att du kopplat Google Sheets-credentialen: öppna noden, välj ditt Sheet + blad i dropdownen, och kontrollera att kolumnmappningen (redan förifylld i JSON:en) matchar dina rubriker. Skapa bladet med rubrikraden **exakt**:
 
@@ -56,7 +59,7 @@ Alla fem stegen passerade (`ALL MOCK TESTS PASSED`). Det här bevisar logiken �
 
 Jag hämtade och kontrollerade varje källa på riktigt (inte bara antog att URL:en stämde). Två döda källor byttes ut, och SE-listan utökades på begäran från 3 till 8 källor för bredare, mer pålitlig bevakning av den svenska marknaden.
 
-**Morgonbrief SE (07:00) — 8 källor:**
+**Morgonbrief SE (09:00) — 8 källor:**
 
 | Källa | Status | Teknik | Verifierat |
 |---|---|---|---|
@@ -71,7 +74,7 @@ Jag hämtade och kontrollerade varje källa på riktigt (inte bara antog att URL
 
 **Kandidater jag testade och förkastade** (så att du slipper testa dem igen): MFN.se (bolagspressmeddelanden — sidan är en JavaScript-app, ingen riktig feed bakom URL:en trots namnet), Fastighetsvärlden (RSS-länken kräver inloggning via SSO), Realtid.se (403 Forbidden på alla varianter), Aktiespararna (ingen fungerande RSS hittad).
 
-**Kvällsbrief Global (17:00) — 11 källor:**
+**Kvällsbrief Global (18:00) — 11 källor:**
 
 | Källa | Bransch | Status | Teknik | Verifierat |
 |---|---|---|---|---|
@@ -104,6 +107,8 @@ Om en källa någon gång slutar fungera (sajter ändrar bot-skydd/URL:er över 
 5. **Ingen retry/felhantering på HTTP-anropen.** Om NewsAPI eller Claude API svarar med fel (t.ex. rate limit) stannar hela körningen och inget mail skickas den dagen — du märker det bara om du aktivt tittar i n8n:s execution-logg. Om du vill ha en varning istället, går det enkelt att lägga till en "Error Trigger"-workflow som mailar dig om en körning misslyckas.
 6. **Gmail auto-send, som du bad om** — inga bekräftelsesteg. Värt att dubbelkolla att `sendTo`-adressen i "Gmail — Skicka Sammanställning" alltid är rätt, eftersom det går direkt ut utan draft-steg.
 7. **Breakit är inte en 1:1-ersättning för Affärsvärlden** — Breakit är svensk tech/startup-bevakning, medan Affärsvärlden var bredare affärsjournalistik. Det ger faktiskt lite extra värde för "AI/tech"-kategorin på morgonkörningen (som annars saknade en dedikerad källa), men täcker inte banker/fastigheter/energi på samma sätt Affärsvärlden hade gjort — där gör Di.se, Placera.se och NewsAPI-sökningen jobbet istället.
+8. **ntfy.sh:s topic-namn är i praktiken ditt lösenord.** Servern är öppen och gratis för alla — vem som helst som gissar/känner till ditt topic-namn kan prenumerera på samma notiser (fast bara texten "Din marknadsanalys är klar", ingen känslig data). Byt ut placeholder-namnet i noden mot något långt och slumpmässigt, inte "marknadsbot" eller ditt namn. Om du vill ha starkare integritet senare finns självhostad ntfy eller en riktig push-tjänst med autentisering (t.ex. Pushover) som alternativ.
+9. **Ingen bekräftelse på att push-notisen faktiskt kom fram.** ntfy.sh är gratis och har ingen SLA — om deras server har ett kort avbrott just när workflowet kör missar du den notisen (mailet går fram som vanligt ändå, eftersom Gmail-noden inte är beroende av ntfy). Om du vill ha högre tillförlitlighet på notissidan är det värt att byta till en betald tjänst med leveransgaranti.
 
 ## Modifierad prompt
 

@@ -3,7 +3,7 @@
   "nodes": [
     {
       "id": "n_1",
-      "name": "Schedule Trigger — 07:00 SE",
+      "name": "Schedule Trigger — 09:00 SE",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -15,7 +15,7 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "0 7 * * *"
+              "expression": "0 9 * * *"
             }
           ]
         }
@@ -23,7 +23,7 @@
     },
     {
       "id": "n_2",
-      "name": "Schedule Trigger — 17:00 Global",
+      "name": "Schedule Trigger — 18:00 Global",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
@@ -35,7 +35,7 @@
           "interval": [
             {
               "field": "cronExpression",
-              "expression": "0 17 * * *"
+              "expression": "0 18 * * *"
             }
           ]
         }
@@ -989,7 +989,39 @@
       }
     },
     {
-      "id": "sticky_58",
+      "id": "n_58",
+      "name": "Notis — ntfy.sh (push)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2180,
+        760
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ntfy.sh/marknadsbot-BYT-UT-TILL-EGET-HEMLIGT-NAMN-8f3k2",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Title",
+              "value": "=Marknadsnyhetsbot — {{$(\"Parsa Claude-svar\").item.json.körning}}"
+            },
+            {
+              "name": "Priority",
+              "value": "default"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "text/plain",
+        "body": "Din marknadsanalys är klar",
+        "options": {}
+      }
+    },
+    {
+      "id": "sticky_59",
       "name": "Note — Setup & Credentials",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -998,14 +1030,14 @@
         -420
       ],
       "parameters": {
-        "content": "## Setup — 4 credentials krävs\n\n1. **NewsAPI (Query Auth)** — Header/Query Auth-credential i n8n: Name = `apiKey`, Value = din NewsAPI-nyckel. Kopplas på båda \"HTTP — NewsAPI …\"-noderna.\n2. **Anthropic API (Header Auth)** — Header Auth-credential: Name = `x-api-key`, Value = din Anthropic API-nyckel. Kopplas på \"Claude — Analysera Artiklar\".\n3. **Google Sheets account** — OAuth2, koppla på \"Google Sheets — Logga Flagga\". Fyll i ditt Sheet-ID och bladnamn i noden.\n4. **Gmail account** — OAuth2, koppla på \"Gmail — Skicka Sammanställning\". Byt mottagaradress vid behov.\n\nWorkflow-inställningar → sätt Timezone till **Europe/Stockholm** så att 07:00/17:00 blir korrekt lokal tid året runt.",
+        "content": "## Setup — 4 credentials krävs\n\n1. **NewsAPI (Query Auth)** — Header/Query Auth-credential i n8n: Name = `apiKey`, Value = din NewsAPI-nyckel. Kopplas på båda \"HTTP — NewsAPI …\"-noderna.\n2. **Anthropic API (Header Auth)** — Header Auth-credential: Name = `x-api-key`, Value = din Anthropic API-nyckel. Kopplas på \"Claude — Analysera Artiklar\".\n3. **Google Sheets account** — OAuth2, koppla på \"Google Sheets — Logga Flagga\". Fyll i ditt Sheet-ID och bladnamn i noden.\n4. **Gmail account** — OAuth2, koppla på \"Gmail — Skicka Sammanställning\". Byt mottagaradress vid behov.\n\n(Push-notisen via ntfy.sh kräver inget konto — se separat lapp.)\n\nWorkflow-inställningar → sätt Timezone till **Europe/Stockholm** så att 09:00/18:00 blir korrekt lokal tid året runt.",
         "height": 300,
         "width": 780,
         "color": 4
       }
     },
     {
-      "id": "sticky_59",
+      "id": "sticky_60",
       "name": "Note — 8 SE-källor, alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1021,7 +1053,7 @@
       }
     },
     {
-      "id": "sticky_60",
+      "id": "sticky_61",
       "name": "Note — 11 Global-källor, alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1037,7 +1069,7 @@
       }
     },
     {
-      "id": "sticky_61",
+      "id": "sticky_62",
       "name": "Note — Modell & tokens",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1053,7 +1085,7 @@
       }
     },
     {
-      "id": "sticky_62",
+      "id": "sticky_63",
       "name": "Note — Google Sheets-kolumner",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1067,10 +1099,26 @@
         "width": 340,
         "color": 7
       }
+    },
+    {
+      "id": "sticky_64",
+      "name": "Note — Push-notis (ntfy.sh), inget konto krävs",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2180,
+        560
+      ],
+      "parameters": {
+        "content": "1. Installera appen **ntfy** (gratis, iOS/Android).\n2. I appen: \"Subscribe to topic\" → skriv ett eget, svårgissat namn (ntfy.sh är en ÖPPEN publik server — vem som helst som känner till ditt topic-namn kan se notiserna, så välj inte något gissningsbart som \"mina-aktier\").\n3. Öppna noden \"Notis — ntfy.sh (push)\" och byt ut sista delen av URL:en (efter sista `/`) till exakt samma namn du valde i appen.\n\nSkickas efter att mailet gått iväg, med texten \"Din marknadsanalys är klar\" (exakt som du bad om) och rubriken \"Marknadsnyhetsbot — [Morgonbrief SE / Kvällsbrief Global]\" så du ser vilken körning det gäller direkt i notisen.",
+        "height": 260,
+        "width": 420,
+        "color": 6
+      }
     }
   ],
   "connections": {
-    "Schedule Trigger — 07:00 SE": {
+    "Schedule Trigger — 09:00 SE": {
       "main": [
         [
           {
@@ -1341,7 +1389,7 @@
         ]
       ]
     },
-    "Schedule Trigger — 17:00 Global": {
+    "Schedule Trigger — 18:00 Global": {
       "main": [
         [
           {
@@ -1769,6 +1817,17 @@
         [
           {
             "node": "Gmail — Skicka Sammanställning",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail — Skicka Sammanställning": {
+      "main": [
+        [
+          {
+            "node": "Notis — ntfy.sh (push)",
             "type": "main",
             "index": 0
           }
