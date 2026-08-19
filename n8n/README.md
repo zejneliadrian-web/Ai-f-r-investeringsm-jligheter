@@ -16,12 +16,12 @@ Schedule 07:00 SE ────── [8 SE-källor, se tabell] ─── Merge S
                      └── HTTP NewsAPI SE → Flatten ────────────────────┼─ Merge SE (alla källor) ─ Normalize & Tag SE ─┐
                                                                                                                           │
                                                                                                                           ├─ Build Article Batch ─ Claude (analys) ─ Parsa Claude-svar ─┬─ Split Out (flaggor) ─ Google Sheets (append)
-Schedule 17:00 Global ── [5 Global-källor, se tabell] ─ Merge Global (RSS) ─┐                                           │                                                              └─ Bygg Sammanställning ─ Gmail (send)
+Schedule 17:00 Global ── [11 Global-källor, se tabell] ─ Merge Global (RSS) ─┐                                          │                                                              └─ Bygg Sammanställning ─ Gmail (send)
                      └── HTTP NewsAPI Global → Flatten ─────────────────────┼─ Merge Global (alla källor) ─ Normalize & Tag Global ─┘
                                                                              ┘
 ```
 
-**Alla 13 källor (8 SE + 5 Global) är verifierade live och fungerar** — inga döda RSS-noder kvar i workflowet. Källorna för respektive marknad listas i tabellerna nedan.
+**Alla 19 RSS-källor (8 SE + 11 Global), plus NewsAPI-sökningarna, är verifierade live och fungerar** — inga döda RSS-noder kvar i workflowet. Källorna för respektive marknad listas i tabellerna nedan.
 
 ## Credentials du behöver lägga in (4 st)
 
@@ -71,15 +71,25 @@ Jag hämtade och kontrollerade varje källa på riktigt (inte bara antog att URL
 
 **Kandidater jag testade och förkastade** (så att du slipper testa dem igen): MFN.se (bolagspressmeddelanden — sidan är en JavaScript-app, ingen riktig feed bakom URL:en trots namnet), Fastighetsvärlden (RSS-länken kräver inloggning via SSO), Realtid.se (403 Forbidden på alla varianter), Aktiespararna (ingen fungerande RSS hittad).
 
-**Kvällsbrief Global (17:00) — 5 källor:**
+**Kvällsbrief Global (17:00) — 11 källor:**
 
-| Källa | Status | Teknik | Verifierat |
-|---|---|---|---|
-| MarketWatch | Fungerade från början | Plain RSS-nod | 200 OK, 10 artiklar |
-| OilPrice.com | Fungerade från början | Plain RSS-nod | 200 OK, 15 artiklar |
-| TechCrunch | Fungerade från början | Plain RSS-nod | 200 OK, 20 artiklar |
-| ~~Reuters Business~~ → **Yahoo Finance** | Reuters borttaget (inget publikt RSS-flöde kvar sedan ~2020). Ersatt med Yahoo Finance (bred global marknadsbevakning) | HTTP + parse | 200 OK, 50 artiklar |
-| ~~Kitco News~~ → **Mining.com** | Kitco borttaget (ingen RSS-länk i sidkällan). Ersatt med Mining.com (gruv-/metall-/råvarunyheter — samma nisch) | HTTP + parse | 200 OK, 36 artiklar |
+| Källa | Bransch | Status | Teknik | Verifierat |
+|---|---|---|---|---|
+| MarketWatch | Banker/marknader | Fungerade från början | Plain RSS-nod | 200 OK, 10 artiklar |
+| OilPrice.com | Olja | Fungerade från början | Plain RSS-nod | 200 OK, 15 artiklar |
+| TechCrunch | AI/tech | Fungerade från början | Plain RSS-nod | 200 OK, 20 artiklar |
+| ~~Reuters Business~~ → **Yahoo Finance** | Banker/marknader | Reuters borttaget (inget publikt RSS-flöde kvar sedan ~2020). Ersatt med Yahoo Finance | HTTP + parse | 200 OK, 50 artiklar |
+| ~~Kitco News~~ → **Mining.com** | Guld/råvaror | Kitco borttaget (ingen RSS-länk i sidkällan). Ersatt med Mining.com | HTTP + parse | 200 OK, 36 artiklar |
+| **Ars Technica** (ny) | AI/tech | Djupare teknikbevakning | Plain RSS-nod | 200 OK, 20 artiklar |
+| **The Verge** (ny) | AI/tech | Konsumentvinkel på tech | Plain RSS-nod | 200 OK, 10 artiklar |
+| **Defense News** (ny) | Försvar | Global försvarsbevakning — saknades helt tidigare | Plain RSS-nod | 200 OK, 25 artiklar |
+| **Investing.com News** (ny) | Banker/marknader | Brett globalt marknadsflöde | Plain RSS-nod | 200 OK, 10 artiklar |
+| **Investing.com Commodities** (ny) | Guld/olja | Råvarufokuserat komplement till Mining.com/OilPrice | Plain RSS-nod | 200 OK, 10 artiklar |
+| **Business Insider Markets** (ny) | Banker/marknader | Ytterligare marknadsbevakning | Plain RSS-nod | 200 OK, 10 artiklar |
+
+**Kandidater jag testade och förkastade:** Axios (403 Forbidden), Motley Fool (redirect till betalvägg), CNBC (403 — blockerar även med webbläsar-header). ZeroHedge fungerade tekniskt (200 OK) men uteslöts medvetet — opinionsdrivet källa med tveksamt track record för faktakontroll, inte lämpligt underlag för investeringsbeslut.
+
+**Kvarstående lucka:** ingen källa täcker "Quantum" specifikt (spekulativ kategori i din prompt) — hittade ingen etablerad, RSS-tillgänglig nischpublikation för kvantdatorer. NewsAPI-sökordet ("quantum computing") får bära den bevakningen tills vidare.
 
 **Teknisk bakgrund:** n8n:s inbyggda RSS Feed Read-nod kan inte skicka egna headers. De källor som blockerar en "vanlig" HTTP-klient (kollar `User-Agent`) går via **HTTP Request (med en riktig webbläsar-`User-Agent` + `Accept`-header) → en liten Code-nod som parsar RSS/Atom-XML:en själv** — samma teknik och samma kodsnutt för alla "HTTP + parse"-källor, testad separat mot varje källas riktiga data. Källor som redan tog emot en vanlig förfrågan utan problem fick behålla den enklare inbyggda RSS-noden.
 
@@ -89,7 +99,7 @@ Om en källa någon gång slutar fungera (sajter ändrar bot-skydd/URL:er över 
 
 1. **Dubblettskydd över dagar, inte bara inom en körning.** Just nu dedupliceras artiklar bara inom samma körning (via länk). Om samma Saab-nyhet dyker upp både i morgon- och kvällskällor olika dagar loggas den två gånger i Sheets. Om du vill undvika det kan ett litet "har jag redan loggat den här länken de senaste N dagarna"-steg läggas till (Google Sheets-lookup innan append) — jag lämnade det utanför för att hålla workflowet enklare, men säg till om du vill ha det.
 2. **`max_tokens: 4096` kan vara i minsta laget** om en körning genererar många flaggor. Om Claude-svaret klipps av mitt i JSON:en kraschar parsningen tyst till `flaggor: []`. Överväg att höja till 8192 och/eller logga `stop_reason` för felsökning.
-3. **Urval per källa, inte bara en rak gräns.** Morgonkörningen har nu 8 SE-källor med väldigt olika volym (DN Ekonomi ~103 artiklar/dag, Second Opinion ~4). Ett naivt "ta de första 40" hade i praktiken helt uteslutit de mindre källorna eftersom de stora fyller upp gränsen innan de ens nås. "Build Article Batch" gör därför **rättvist urval**: max 8 artiklar per källa, totalt tak 60 — så alla 8-9 källor (inkl. NewsAPI) alltid är representerade i det som skickas till Claude, oavsett hur många artiklar en enskild källa råkar ha den dagen. Testat med riktiga volymer (324 artiklar från 9 källor → alla källor representerade, ingen utesluten).
+3. **Urval per källa, inte bara en rak gräns.** Båda körningarna har nu många källor med väldigt olika volym (t.ex. DN Ekonomi ~103 artiklar/dag mot Second Opinion ~4; Yahoo Finance ~50 mot Investing.com News ~10). Ett naivt "ta de första 40" hade i praktiken helt uteslutit de mindre källorna eftersom de stora fyller upp gränsen innan de ens nås. "Build Article Batch" gör därför **rättvist urval**: max 8 artiklar per källa, totalt tak 60 — så alla källor (inkl. NewsAPI) alltid är representerade i det som skickas till Claude, oavsett hur många artiklar en enskild källa råkar ha den dagen. Testat med riktiga volymer för båda körningarna (SE: 324 artiklar/9 källor, Global: 246 artiklar/12 källor → samtliga källor representerade i båda fallen).
 4. **Modellnamnet `claude-sonnet-5`** är satt som en rimlig standard. Om du vill låsa en exakt, oföränderlig modellversion (så att en framtida modell-uppdatering inte påverkar dina resultat över tid när du utvärderar träffsäkerhet), byt till en daterad snapshot-modell-identifierare istället.
 5. **Ingen retry/felhantering på HTTP-anropen.** Om NewsAPI eller Claude API svarar med fel (t.ex. rate limit) stannar hela körningen och inget mail skickas den dagen — du märker det bara om du aktivt tittar i n8n:s execution-logg. Om du vill ha en varning istället, går det enkelt att lägga till en "Error Trigger"-workflow som mailar dig om en körning misslyckas.
 6. **Gmail auto-send, som du bad om** — inga bekräftelsesteg. Värt att dubbelkolla att `sendTo`-adressen i "Gmail — Skicka Sammanställning" alltid är rätt, eftersom det går direkt ut utan draft-steg.

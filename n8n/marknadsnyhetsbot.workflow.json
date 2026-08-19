@@ -567,12 +567,168 @@
     },
     {
       "id": "n_34",
+      "name": "RSS — Ars Technica",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1460
+      ],
+      "parameters": {
+        "url": "https://feeds.arstechnica.com/arstechnica/index"
+      }
+    },
+    {
+      "id": "n_35",
+      "name": "Tagga källa — Ars Technica",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1460
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Ars Technica\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_36",
+      "name": "RSS — The Verge",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1620
+      ],
+      "parameters": {
+        "url": "https://www.theverge.com/rss/index.xml"
+      }
+    },
+    {
+      "id": "n_37",
+      "name": "Tagga källa — The Verge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1620
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"The Verge\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_38",
+      "name": "RSS — Defense News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1780
+      ],
+      "parameters": {
+        "url": "https://www.defensenews.com/arc/outboundfeeds/rss/"
+      }
+    },
+    {
+      "id": "n_39",
+      "name": "Tagga källa — Defense News",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1780
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Defense News\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_40",
+      "name": "RSS — Investing.com News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        1940
+      ],
+      "parameters": {
+        "url": "https://www.investing.com/rss/news.rss"
+      }
+    },
+    {
+      "id": "n_41",
+      "name": "Tagga källa — Investing.com News",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1940
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Investing.com News\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_42",
+      "name": "RSS — Investing.com Commodities",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        2100
+      ],
+      "parameters": {
+        "url": "https://www.investing.com/rss/news_11.rss"
+      }
+    },
+    {
+      "id": "n_43",
+      "name": "Tagga källa — Investing.com Commodities",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        2100
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Investing.com Commodities\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_44",
+      "name": "RSS — Business Insider Markets",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        2260
+      ],
+      "parameters": {
+        "url": "https://markets.businessinsider.com/rss/news"
+      }
+    },
+    {
+      "id": "n_45",
+      "name": "Tagga källa — Business Insider Markets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        2260
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Business Insider Markets\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_46",
       "name": "HTTP — NewsAPI Global",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -180,
-        1460
+        2420
       ],
       "parameters": {
         "method": "GET",
@@ -610,20 +766,20 @@
       }
     },
     {
-      "id": "n_35",
+      "id": "n_47",
       "name": "Flatten NewsAPI Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         80,
-        1460
+        2420
       ],
       "parameters": {
         "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || '',\n    source: 'NewsAPI'\n  }\n}));"
       }
     },
     {
-      "id": "n_36",
+      "id": "n_48",
       "name": "Merge Global — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -633,17 +789,17 @@
       ],
       "parameters": {
         "mode": "append",
-        "numberInputs": 5
+        "numberInputs": 11
       }
     },
     {
-      "id": "n_37",
+      "id": "n_49",
       "name": "Merge Global — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
       "position": [
         340,
-        1120
+        1700
       ],
       "parameters": {
         "mode": "append",
@@ -651,20 +807,20 @@
       }
     },
     {
-      "id": "n_38",
+      "id": "n_50",
       "name": "Normalize & Tag — Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         600,
-        1120
+        1700
       ],
       "parameters": {
         "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      source: j.source || 'Okänd källa',\n      runLabel: 'Kvällsbrief — Global',\n      runKey: 'Global'\n    }\n  });\n}\nreturn output;"
       }
     },
     {
-      "id": "n_39",
+      "id": "n_51",
       "name": "Build Article Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -677,7 +833,7 @@
       }
     },
     {
-      "id": "n_40",
+      "id": "n_52",
       "name": "Claude — Analysera Artiklar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -718,7 +874,7 @@
       }
     },
     {
-      "id": "n_41",
+      "id": "n_53",
       "name": "Parsa Claude-svar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -731,7 +887,7 @@
       }
     },
     {
-      "id": "n_42",
+      "id": "n_54",
       "name": "Split Out — Flaggor",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
@@ -745,7 +901,7 @@
       }
     },
     {
-      "id": "n_43",
+      "id": "n_55",
       "name": "Google Sheets — Logga Flagga",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -793,7 +949,7 @@
       }
     },
     {
-      "id": "n_44",
+      "id": "n_56",
       "name": "Bygg Sammanställning",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -806,7 +962,7 @@
       }
     },
     {
-      "id": "n_45",
+      "id": "n_57",
       "name": "Gmail — Skicka Sammanställning",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -833,7 +989,7 @@
       }
     },
     {
-      "id": "sticky_46",
+      "id": "sticky_58",
       "name": "Note — Setup & Credentials",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -849,7 +1005,7 @@
       }
     },
     {
-      "id": "sticky_47",
+      "id": "sticky_59",
       "name": "Note — 8 SE-källor, alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -865,8 +1021,8 @@
       }
     },
     {
-      "id": "sticky_48",
-      "name": "Note — Global-källor: alla verifierade live",
+      "id": "sticky_60",
+      "name": "Note — 11 Global-källor, alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -874,14 +1030,14 @@
         560
       ],
       "parameters": {
-        "content": "✅ MarketWatch, OilPrice.com, TechCrunch — fungerar med vilken klient som helst.\n\n🔁 Reuters Business borttagen — de har inget publikt RSS-flöde kvar överhuvudtaget (inget flödeslänk hittades någonstans på reutersagency.com). Ersatt med Yahoo Finance (bred global marknadsbevakning) — kräver webbläsar-UA, verifierat: 200 OK, 50 artiklar.\n\n🔁 Kitco News borttagen — ingen RSS-länk gick att hitta i sidans källkod. Ersatt med Mining.com (gruv-/metall-/råvarunyheter) — kräver webbläsar-UA, verifierat: 200 OK, 36 artiklar.",
-        "height": 300,
-        "width": 460,
+        "content": "✅ MarketWatch, OilPrice.com, TechCrunch, Ars Technica, The Verge, Defense News, Investing.com News, Investing.com Commodities, Business Insider Markets — fungerar med vilken klient som helst.\n\n🔁 Reuters Business borttagen (inget publikt RSS-flöde kvar sedan ~2020). Ersatt med Yahoo Finance — kräver webbläsar-UA, verifierat: 200 OK, 50 artiklar.\n🔁 Kitco News borttagen (ingen RSS-länk i sidkällan). Ersatt med Mining.com — kräver webbläsar-UA, verifierat: 200 OK, 36 artiklar.\n\nTäckning per bransch: AI/tech (TechCrunch, Ars Technica, The Verge), guld/olja (OilPrice, Mining.com, Investing.com Commodities), banker/marknader (Yahoo Finance, MarketWatch, Investing.com News, Business Insider Markets), försvar (Defense News). Quantum saknar fortfarande dedikerad källa — NewsAPI-sökordet täcker det.",
+        "height": 380,
+        "width": 500,
         "color": 3
       }
     },
     {
-      "id": "sticky_49",
+      "id": "sticky_61",
       "name": "Note — Modell & tokens",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -897,7 +1053,7 @@
       }
     },
     {
-      "id": "sticky_50",
+      "id": "sticky_62",
       "name": "Note — Google Sheets-kolumner",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -1214,6 +1370,36 @@
             "index": 0
           },
           {
+            "node": "RSS — Ars Technica",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — The Verge",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Defense News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Investing.com News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Investing.com Commodities",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Business Insider Markets",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "HTTP — NewsAPI Global",
             "type": "main",
             "index": 0
@@ -1270,6 +1456,72 @@
         [
           {
             "node": "Tagga källa — TechCrunch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Ars Technica": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Ars Technica",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — The Verge": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — The Verge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Defense News": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Defense News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Investing.com News": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Investing.com News",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Investing.com Commodities": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Investing.com Commodities",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Business Insider Markets": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Business Insider Markets",
             "type": "main",
             "index": 0
           }
@@ -1338,6 +1590,72 @@
             "node": "Merge Global — RSS",
             "type": "main",
             "index": 4
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Ars Technica": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Tagga källa — The Verge": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Defense News": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Investing.com News": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Investing.com Commodities": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Business Insider Markets": {
+      "main": [
+        [
+          {
+            "node": "Merge Global — RSS",
+            "type": "main",
+            "index": 10
           }
         ]
       ]
