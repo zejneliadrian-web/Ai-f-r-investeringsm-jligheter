@@ -48,7 +48,7 @@
       "typeVersion": 4.2,
       "position": [
         -180,
-        -280
+        -560
       ],
       "parameters": {
         "method": "GET",
@@ -83,10 +83,10 @@
       "typeVersion": 2,
       "position": [
         -40,
-        -280
+        -560
       ],
       "parameters": {
-        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nitems.forEach((it) => { it.json.source = \"Di.se\"; });\nreturn items;\n"
       }
     },
     {
@@ -96,7 +96,7 @@
       "typeVersion": 4.2,
       "position": [
         -180,
-        -120
+        -400
       ],
       "parameters": {
         "method": "GET",
@@ -131,10 +131,10 @@
       "typeVersion": 2,
       "position": [
         -40,
-        -120
+        -400
       ],
       "parameters": {
-        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nitems.forEach((it) => { it.json.source = \"Placera.se\"; });\nreturn items;\n"
       }
     },
     {
@@ -144,7 +144,7 @@
       "typeVersion": 1.1,
       "position": [
         -180,
-        40
+        -240
       ],
       "parameters": {
         "url": "https://www.breakit.se/feed/artiklar"
@@ -152,12 +152,155 @@
     },
     {
       "id": "n_8",
+      "name": "Tagga källa — Breakit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -240
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Breakit\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_9",
+      "name": "RSS — DN Ekonomi",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        -80
+      ],
+      "parameters": {
+        "url": "https://www.dn.se/rss/ekonomi/"
+      }
+    },
+    {
+      "id": "n_10",
+      "name": "Tagga källa — DN Ekonomi",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -80
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"DN Ekonomi\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_11",
+      "name": "RSS — SVT Ekonomi",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        80
+      ],
+      "parameters": {
+        "url": "https://www.svt.se/nyheter/ekonomi/rss.xml"
+      }
+    },
+    {
+      "id": "n_12",
+      "name": "Tagga källa — SVT Ekonomi",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        80
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"SVT Ekonomi\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_13",
+      "name": "RSS — Sveriges Radio Ekot",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        240
+      ],
+      "parameters": {
+        "url": "https://api.sr.se/api/rss/program/83?format=145"
+      }
+    },
+    {
+      "id": "n_14",
+      "name": "Tagga källa — Sveriges Radio Ekot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        240
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Sveriges Radio Ekot\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_15",
+      "name": "RSS — Second Opinion",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        400
+      ],
+      "parameters": {
+        "url": "https://second-opinion.se/feed/"
+      }
+    },
+    {
+      "id": "n_16",
+      "name": "Tagga källa — Second Opinion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        400
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Second Opinion\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_17",
+      "name": "RSS — Dagens PS",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        560
+      ],
+      "parameters": {
+        "url": "https://www.dagensps.se/feed/"
+      }
+    },
+    {
+      "id": "n_18",
+      "name": "Tagga källa — Dagens PS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        560
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"Dagens PS\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_19",
       "name": "HTTP — NewsAPI SE",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
         -180,
-        200
+        720
       ],
       "parameters": {
         "method": "GET",
@@ -195,40 +338,40 @@
       }
     },
     {
-      "id": "n_9",
+      "id": "n_20",
       "name": "Flatten NewsAPI SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         80,
-        200
+        720
       ],
       "parameters": {
-        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || ''\n  }\n}));"
+        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || '',\n    source: 'NewsAPI'\n  }\n}));"
       }
     },
     {
-      "id": "n_10",
+      "id": "n_21",
       "name": "Merge SE — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
       "position": [
         80,
-        -120
+        0
       ],
       "parameters": {
         "mode": "append",
-        "numberInputs": 3
+        "numberInputs": 8
       }
     },
     {
-      "id": "n_11",
+      "id": "n_22",
       "name": "Merge SE — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
       "position": [
         340,
-        20
+        360
       ],
       "parameters": {
         "mode": "append",
@@ -236,20 +379,20 @@
       }
     },
     {
-      "id": "n_12",
+      "id": "n_23",
       "name": "Normalize & Tag — SE",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         600,
-        20
+        360
       ],
       "parameters": {
-        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      runLabel: 'Morgonbrief — SE',\n      runKey: 'SE'\n    }\n  });\n}\nreturn output;"
+        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      source: j.source || 'Okänd källa',\n      runLabel: 'Morgonbrief — SE',\n      runKey: 'SE'\n    }\n  });\n}\nreturn output;"
       }
     },
     {
-      "id": "n_13",
+      "id": "n_24",
       "name": "HTTP — Yahoo Finance (RSS, browser UA)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -284,7 +427,7 @@
       }
     },
     {
-      "id": "n_14",
+      "id": "n_25",
       "name": "Parsa RSS — Yahoo Finance",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -293,11 +436,11 @@
         660
       ],
       "parameters": {
-        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nitems.forEach((it) => { it.json.source = \"Yahoo Finance\"; });\nreturn items;\n"
       }
     },
     {
-      "id": "n_15",
+      "id": "n_26",
       "name": "RSS — MarketWatch",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -310,7 +453,20 @@
       }
     },
     {
-      "id": "n_16",
+      "id": "n_27",
+      "name": "Tagga källa — MarketWatch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        820
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"MarketWatch\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_28",
       "name": "RSS — OilPrice.com",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -323,7 +479,20 @@
       }
     },
     {
-      "id": "n_17",
+      "id": "n_29",
+      "name": "Tagga källa — OilPrice.com",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        980
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"OilPrice.com\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_30",
       "name": "HTTP — Mining.com (RSS, browser UA)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -358,7 +527,7 @@
       }
     },
     {
-      "id": "n_18",
+      "id": "n_31",
       "name": "Parsa RSS — Mining.com",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -367,11 +536,11 @@
         1140
       ],
       "parameters": {
-        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nreturn items;\n"
+        "jsCode": "const xml = $json.data || $json.body || (typeof $json === 'string' ? $json : '') || '';\n\nfunction stripCdataAndTags(s) {\n  return s\n    .replace(/^<!\\[CDATA\\[/, '')\n    .replace(/\\]\\]>$/, '')\n    .replace(/<[^>]+>/g, '')\n    .trim();\n}\nfunction extractTag(tag, block) {\n  const re = new RegExp(`<${tag}[^>]*>([\\\\s\\\\S]*?)</${tag}>`, 'i');\n  const m = block.match(re);\n  return m ? stripCdataAndTags(m[1]) : '';\n}\nfunction extractLink(block) {\n  const attrMatch = block.match(/<link[^>]*\\shref=\"([^\"]+)\"/i);\n  if (attrMatch) return attrMatch[1];\n  return extractTag('link', block);\n}\n\nconst blocks = xml.match(/<item[\\s\\S]*?<\\/item>/gi) || xml.match(/<entry[\\s\\S]*?<\\/entry>/gi) || [];\nconst items = [];\nfor (const block of blocks) {\n  const title = extractTag('title', block);\n  const link = extractLink(block);\n  const description = extractTag('description', block) || extractTag('summary', block) || extractTag('content', block);\n  if (!title) continue;\n  items.push({ json: { title, link, contentSnippet: description } });\n}\nitems.forEach((it) => { it.json.source = \"Mining.com\"; });\nreturn items;\n"
       }
     },
     {
-      "id": "n_19",
+      "id": "n_32",
       "name": "RSS — TechCrunch",
       "type": "n8n-nodes-base.rssFeedRead",
       "typeVersion": 1.1,
@@ -384,7 +553,20 @@
       }
     },
     {
-      "id": "n_20",
+      "id": "n_33",
+      "name": "Tagga källa — TechCrunch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        1300
+      ],
+      "parameters": {
+        "jsCode": "const items = $input.all();\nitems.forEach((it) => { it.json.source = \"TechCrunch\"; });\nreturn items;"
+      }
+    },
+    {
+      "id": "n_34",
       "name": "HTTP — NewsAPI Global",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -428,7 +610,7 @@
       }
     },
     {
-      "id": "n_21",
+      "id": "n_35",
       "name": "Flatten NewsAPI Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -437,11 +619,11 @@
         1460
       ],
       "parameters": {
-        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || ''\n  }\n}));"
+        "jsCode": "const response = $input.first().json;\nconst articles = response.articles || [];\nreturn articles.map(a => ({\n  json: {\n    title: a.title || '',\n    ingress: a.description || '',\n    link: a.url || '',\n    source: 'NewsAPI'\n  }\n}));"
       }
     },
     {
-      "id": "n_22",
+      "id": "n_36",
       "name": "Merge Global — RSS",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -455,7 +637,7 @@
       }
     },
     {
-      "id": "n_23",
+      "id": "n_37",
       "name": "Merge Global — All Sources",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.1,
@@ -469,7 +651,7 @@
       }
     },
     {
-      "id": "n_24",
+      "id": "n_38",
       "name": "Normalize & Tag — Global",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -478,11 +660,11 @@
         1120
       ],
       "parameters": {
-        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      runLabel: 'Kvällsbrief — Global',\n      runKey: 'Global'\n    }\n  });\n}\nreturn output;"
+        "jsCode": "const items = $input.all();\nconst seen = new Set();\nconst output = [];\nfor (const item of items) {\n  const j = item.json;\n  const title = (j.title || '').toString().trim();\n  const link = j.link || j.url || '';\n  if (!title || seen.has(link)) continue;\n  seen.add(link);\n  output.push({\n    json: {\n      title,\n      ingress: (j.ingress || j.contentSnippet || j.content || j.summary || '').toString().slice(0, 500),\n      link,\n      source: j.source || 'Okänd källa',\n      runLabel: 'Kvällsbrief — Global',\n      runKey: 'Global'\n    }\n  });\n}\nreturn output;"
       }
     },
     {
-      "id": "n_25",
+      "id": "n_39",
       "name": "Build Article Batch",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -491,11 +673,11 @@
         570
       ],
       "parameters": {
-        "jsCode": "const SYSTEM_PROMPT = \"Du är en finansiell nyhetsanalytiker specialiserad på att identifiera potentiella investeringsmöjligheter (köp/sälj-signaler) genom att läsa nyhetsartiklar. Du arbetar åt en privat investerare som vill ha snabb, ärlig och konkret bedömning — inte allmänt hausse-prat.\\n\\nBRANSCHER ATT BEVAKA (klassificera varje relevant artikel till en av dessa):\\n1. AI/tech\\n2. Banker\\n3. Energi/olja\\n4. Guld/råvaror (inkl. litium, koppar, uran, silver)\\n5. Försvar\\n6. Quantum (spekulativ kategori — flagga alltid som högre risk)\\n\\nOm en artikel inte rör någon av dessa branscher eller inte innehåller någon agerbar signal ska den ignoreras helt (returnera ingen post för den).\\n\\nDIN UPPGIFT för varje relevant artikel:\\n1. Identifiera vilket bolag/bransch artikeln rör\\n2. Bedöm om det är en köpsignal, säljsignal, eller enbart bevakningsvärd (ingen tydlig riktning ännu)\\n3. Sätt en konfidensgrad: Hög / Medel / Låg\\n   - Hög: konkret, mätbar händelse med tydlig historisk koppling till kursrörelse (t.ex. förvärv, resultatöverraskning, stort kontrakt, regulatoriskt godkännande)\\n   - Medel: relevant händelse men med osäker eller indirekt påverkan\\n   - Låg: spekulativt, rykte, eller svag koppling till faktisk kurspåverkan\\n4. Skriv en kort motivering (max 2 meningar) — vad hände och varför det spelar roll\\n5. Ange källa (URL till originalartikeln)\\n\\nVIKTIGA PRINCIPER:\\n- Var ärligt återhållsam. De flesta nyheter är brus — det är okej att en dag inte ha några Hög-konfidens flaggor.\\n- Skilj tydligt på faktisk händelse (t.ex. \\\"bolag X rapporterade 15% vinstökning\\\") och spekulation (t.ex. \\\"analytiker tror att...\\\").\\n- Om samma bolag nämns i flera artiklar samma dag, slå ihop till en post med den starkaste signalen.\\n- Hitta aldrig på siffror, bolagsnamn eller händelser som inte finns i texten.\\n- Om osäker på om något är en verklig signal — sätt lägre konfidensgrad snarare än att gissa högt.\\n\\nOUTPUT-FORMAT — svara ENDAST med giltig JSON, ingen text utanför, i detta schema:\\n{\\n  \\\"flaggor\\\": [\\n    {\\n      \\\"bolag\\\": \\\"string\\\",\\n      \\\"bransch\\\": \\\"AI/tech | Banker | Energi/olja | Guld/råvaror | Försvar | Quantum\\\",\\n      \\\"signal\\\": \\\"Köp | Sälj | Bevaka\\\",\\n      \\\"konfidensgrad\\\": \\\"Hög | Medel | Låg\\\",\\n      \\\"motivering\\\": \\\"string (max 2 meningar)\\\",\\n      \\\"källa\\\": \\\"url\\\"\\n    }\\n  ]\\n}\\n\\nOm inga relevanta flaggor hittas i artikeln/artiklarna: returnera {\\\"flaggor\\\": []}\";\n\nconst items = $input.all();\nconst datum = new Date().toISOString().slice(0, 10);\n\nif (items.length === 0) {\n  return [{\n    json: {\n      systemPrompt: SYSTEM_PROMPT,\n      userMessage: 'Inga artiklar hittades i denna körning.',\n      runLabel: 'Okänd körning',\n      runKey: 'SE',\n      datum,\n      articleCount: 0\n    }\n  }];\n}\n\nconst runLabel = items[0].json.runLabel;\nconst runKey = items[0].json.runKey;\nconst MAX_ARTICLES = 40;\nconst trimmed = items.slice(0, MAX_ARTICLES);\n\nconst articles = trimmed.map((item, i) => {\n  const j = item.json;\n  return `${i + 1}. Titel: ${j.title}\\nIngress: ${j.ingress || '(ingen ingress tillgänglig)'}\\nLänk: ${j.link}`;\n}).join('\\n\\n');\n\nconst userMessage = `Körning: ${runLabel}\\nDatum: ${datum}\\nAntal artiklar i denna batch: ${trimmed.length}\\n\\nAnalysera artiklarna nedan enligt instruktionerna i systempromptet och returnera ENDAST giltig JSON enligt schemat — ingen text utanför JSON-objektet.\\n\\n${articles}`;\n\nreturn [{\n  json: {\n    systemPrompt: SYSTEM_PROMPT,\n    userMessage,\n    runLabel,\n    runKey,\n    datum,\n    articleCount: trimmed.length\n  }\n}];"
+        "jsCode": "const SYSTEM_PROMPT = \"Du är en finansiell nyhetsanalytiker specialiserad på att identifiera potentiella investeringsmöjligheter (köp/sälj-signaler) genom att läsa nyhetsartiklar. Du arbetar åt en privat investerare som vill ha snabb, ärlig och konkret bedömning — inte allmänt hausse-prat.\\n\\nBRANSCHER ATT BEVAKA (klassificera varje relevant artikel till en av dessa):\\n1. AI/tech\\n2. Banker\\n3. Energi/olja\\n4. Guld/råvaror (inkl. litium, koppar, uran, silver)\\n5. Försvar\\n6. Quantum (spekulativ kategori — flagga alltid som högre risk)\\n\\nOm en artikel inte rör någon av dessa branscher eller inte innehåller någon agerbar signal ska den ignoreras helt (returnera ingen post för den).\\n\\nDIN UPPGIFT för varje relevant artikel:\\n1. Identifiera vilket bolag/bransch artikeln rör\\n2. Bedöm om det är en köpsignal, säljsignal, eller enbart bevakningsvärd (ingen tydlig riktning ännu)\\n3. Sätt en konfidensgrad: Hög / Medel / Låg\\n   - Hög: konkret, mätbar händelse med tydlig historisk koppling till kursrörelse (t.ex. förvärv, resultatöverraskning, stort kontrakt, regulatoriskt godkännande)\\n   - Medel: relevant händelse men med osäker eller indirekt påverkan\\n   - Låg: spekulativt, rykte, eller svag koppling till faktisk kurspåverkan\\n4. Skriv en kort motivering (max 2 meningar) — vad hände och varför det spelar roll\\n5. Ange källa (URL till originalartikeln)\\n\\nVIKTIGA PRINCIPER:\\n- Var ärligt återhållsam. De flesta nyheter är brus — det är okej att en dag inte ha några Hög-konfidens flaggor.\\n- Skilj tydligt på faktisk händelse (t.ex. \\\"bolag X rapporterade 15% vinstökning\\\") och spekulation (t.ex. \\\"analytiker tror att...\\\").\\n- Om samma bolag nämns i flera artiklar samma dag, slå ihop till en post med den starkaste signalen.\\n- Hitta aldrig på siffror, bolagsnamn eller händelser som inte finns i texten.\\n- Om osäker på om något är en verklig signal — sätt lägre konfidensgrad snarare än att gissa högt.\\n\\nOUTPUT-FORMAT — svara ENDAST med giltig JSON, ingen text utanför, i detta schema:\\n{\\n  \\\"flaggor\\\": [\\n    {\\n      \\\"bolag\\\": \\\"string\\\",\\n      \\\"bransch\\\": \\\"AI/tech | Banker | Energi/olja | Guld/råvaror | Försvar | Quantum\\\",\\n      \\\"signal\\\": \\\"Köp | Sälj | Bevaka\\\",\\n      \\\"konfidensgrad\\\": \\\"Hög | Medel | Låg\\\",\\n      \\\"motivering\\\": \\\"string (max 2 meningar)\\\",\\n      \\\"källa\\\": \\\"url\\\"\\n    }\\n  ]\\n}\\n\\nOm inga relevanta flaggor hittas i artikeln/artiklarna: returnera {\\\"flaggor\\\": []}\";\n\nconst items = $input.all();\nconst datum = new Date().toISOString().slice(0, 10);\n\nif (items.length === 0) {\n  return [{\n    json: {\n      systemPrompt: SYSTEM_PROMPT,\n      userMessage: 'Inga artiklar hittades i denna körning.',\n      runLabel: 'Okänd körning',\n      runKey: 'SE',\n      datum,\n      articleCount: 0\n    }\n  }];\n}\n\nconst runLabel = items[0].json.runLabel;\nconst runKey = items[0].json.runKey;\n\n// Fair round-robin sampling across sources instead of a flat slice, so a\n// high-volume source (e.g. 100+ articles) can't crowd out smaller ones\n// (e.g. 4 articles) before the cap is reached.\nconst MAX_PER_SOURCE = 8;\nconst MAX_ARTICLES = 60;\n\nconst bySource = {};\nconst sourceOrder = [];\nfor (const item of items) {\n  const src = item.json.source || 'Okänd källa';\n  if (!bySource[src]) {\n    bySource[src] = [];\n    sourceOrder.push(src);\n  }\n  bySource[src].push(item);\n}\n\nconst selected = [];\nfor (let round = 0; round < MAX_PER_SOURCE && selected.length < MAX_ARTICLES; round++) {\n  for (const src of sourceOrder) {\n    if (selected.length >= MAX_ARTICLES) break;\n    const bucket = bySource[src];\n    if (bucket[round]) selected.push(bucket[round]);\n  }\n}\n\nconst articles = selected.map((item, i) => {\n  const j = item.json;\n  return `${i + 1}. Källa: ${j.source || 'Okänd källa'}\\nTitel: ${j.title}\\nIngress: ${j.ingress || '(ingen ingress tillgänglig)'}\\nLänk: ${j.link}`;\n}).join('\\n\\n');\n\nconst userMessage = `Körning: ${runLabel}\\nDatum: ${datum}\\nAntal artiklar hämtade totalt: ${items.length} (från ${sourceOrder.length} källor)\\nAntal artiklar i denna batch (rättvist urval, max ${MAX_PER_SOURCE} per källa): ${selected.length}\\n\\nAnalysera artiklarna nedan enligt instruktionerna i systempromptet och returnera ENDAST giltig JSON enligt schemat — ingen text utanför JSON-objektet.\\n\\n${articles}`;\n\nreturn [{\n  json: {\n    systemPrompt: SYSTEM_PROMPT,\n    userMessage,\n    runLabel,\n    runKey,\n    datum,\n    articleCount: selected.length,\n    totalFetched: items.length\n  }\n}];\n"
       }
     },
     {
-      "id": "n_26",
+      "id": "n_40",
       "name": "Claude — Analysera Artiklar",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -536,7 +718,7 @@
       }
     },
     {
-      "id": "n_27",
+      "id": "n_41",
       "name": "Parsa Claude-svar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -549,7 +731,7 @@
       }
     },
     {
-      "id": "n_28",
+      "id": "n_42",
       "name": "Split Out — Flaggor",
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
@@ -563,7 +745,7 @@
       }
     },
     {
-      "id": "n_29",
+      "id": "n_43",
       "name": "Google Sheets — Logga Flagga",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -611,7 +793,7 @@
       }
     },
     {
-      "id": "n_30",
+      "id": "n_44",
       "name": "Bygg Sammanställning",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -624,7 +806,7 @@
       }
     },
     {
-      "id": "n_31",
+      "id": "n_45",
       "name": "Gmail — Skicka Sammanställning",
       "type": "n8n-nodes-base.gmail",
       "typeVersion": 2.1,
@@ -651,7 +833,7 @@
       }
     },
     {
-      "id": "sticky_32",
+      "id": "sticky_46",
       "name": "Note — Setup & Credentials",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -667,8 +849,8 @@
       }
     },
     {
-      "id": "sticky_33",
-      "name": "Note — SE-källor: alla verifierade live",
+      "id": "sticky_47",
+      "name": "Note — 8 SE-källor, alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -676,14 +858,14 @@
         -100
       ],
       "parameters": {
-        "content": "✅ Di.se — blockerade förfrågningar utan riktig User-Agent. Löst med HTTP Request (webbläsar-UA) + egen XML-parsning. Verifierat: 200 OK, 20 artiklar.\n\n✅ Placera.se — samma sak, men URL:en var dessutom fel (var `/rss.xml`, rätt är `/artiklar/rss.xml`, hittad i sidans källkod). Verifierat: 200 OK, 30 artiklar.\n\n🔁 Affärsvärlden borttagen — hade en oändlig omdirigeringsloop för alla automatiska klienter (Cloudflare-liknande skydd, går inte att lösa med headers). Ersatt med Breakit (svensk tech/startup-bevakning), som fungerar med vilken klient som helst — verifierat: 200 OK, 17 artiklar.",
-        "height": 320,
-        "width": 460,
+        "content": "✅ Di.se (20 art.) — blockerade förfrågningar utan riktig User-Agent, löst med HTTP+parse.\n✅ Placera.se (30 art.) — fel URL i förra försöket, rätt är /artiklar/rss.xml, löst med HTTP+parse.\n✅ Breakit (17 art.) — svensk tech/startup, ersätter Affärsvärlden (oåtkomlig, oändlig redirect-loop).\n✅ DN Ekonomi (103 art.) — Dagens Nyheters ekonomisektion, brett och stort.\n✅ SVT Ekonomi (100 art.) — public service, mycket pålitlig.\n✅ Sveriges Radio Ekot (20 art.) — public service-nyhetsradions ekonomibevakning.\n✅ Second Opinion (4 art.) — nischad energisektor-bevakning, matchar \"Energi\"-kategorin extra bra.\n✅ Dagens PS (10 art.) — svenskt närings-/entreprenörsnyheter.\n\nAlla 8 verifierade live mot riktig data innan leverans (se README för detaljer).",
+        "height": 380,
+        "width": 480,
         "color": 3
       }
     },
     {
-      "id": "sticky_34",
+      "id": "sticky_48",
       "name": "Note — Global-källor: alla verifierade live",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -699,7 +881,7 @@
       }
     },
     {
-      "id": "sticky_35",
+      "id": "sticky_49",
       "name": "Note — Modell & tokens",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -715,7 +897,7 @@
       }
     },
     {
-      "id": "sticky_36",
+      "id": "sticky_50",
       "name": "Note — Google Sheets-kolumner",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -751,6 +933,31 @@
             "index": 0
           },
           {
+            "node": "RSS — DN Ekonomi",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — SVT Ekonomi",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Sveriges Radio Ekot",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Second Opinion",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS — Dagens PS",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "HTTP — NewsAPI SE",
             "type": "main",
             "index": 0
@@ -774,6 +981,72 @@
         [
           {
             "node": "Parsa RSS — Placera.se",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Breakit": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Breakit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — DN Ekonomi": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — DN Ekonomi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — SVT Ekonomi": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — SVT Ekonomi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Sveriges Radio Ekot": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Sveriges Radio Ekot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Second Opinion": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Second Opinion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — Dagens PS": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — Dagens PS",
             "type": "main",
             "index": 0
           }
@@ -813,13 +1086,68 @@
         ]
       ]
     },
-    "RSS — Breakit": {
+    "Tagga källa — Breakit": {
       "main": [
         [
           {
             "node": "Merge SE — RSS",
             "type": "main",
             "index": 2
+          }
+        ]
+      ]
+    },
+    "Tagga källa — DN Ekonomi": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Tagga källa — SVT Ekonomi": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Sveriges Radio Ekot": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Second Opinion": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Tagga källa — Dagens PS": {
+      "main": [
+        [
+          {
+            "node": "Merge SE — RSS",
+            "type": "main",
+            "index": 7
           }
         ]
       ]
@@ -904,11 +1232,44 @@
         ]
       ]
     },
+    "RSS — MarketWatch": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — MarketWatch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — OilPrice.com": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — OilPrice.com",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "HTTP — Mining.com (RSS, browser UA)": {
       "main": [
         [
           {
             "node": "Parsa RSS — Mining.com",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RSS — TechCrunch": {
+      "main": [
+        [
+          {
+            "node": "Tagga källa — TechCrunch",
             "type": "main",
             "index": 0
           }
@@ -937,7 +1298,7 @@
         ]
       ]
     },
-    "RSS — MarketWatch": {
+    "Tagga källa — MarketWatch": {
       "main": [
         [
           {
@@ -948,7 +1309,7 @@
         ]
       ]
     },
-    "RSS — OilPrice.com": {
+    "Tagga källa — OilPrice.com": {
       "main": [
         [
           {
@@ -970,7 +1331,7 @@
         ]
       ]
     },
-    "RSS — TechCrunch": {
+    "Tagga källa — TechCrunch": {
       "main": [
         [
           {
