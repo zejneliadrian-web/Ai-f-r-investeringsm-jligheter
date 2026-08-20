@@ -277,6 +277,68 @@
 
   .flag-reason { margin: 0; font-size: 0.88rem; line-height: 1.52; color: var(--ink); }
 
+  .flag-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .flag-action-btn {
+    flex: 1;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    padding: 9px 6px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .flag-action-btn:active { transform: scale(0.97); }
+  .flag-action-btn.active { border-color: var(--accent); color: var(--accent); }
+  .flag-action-btn:disabled { opacity: 0.55; }
+
+  .chart-box {
+    display: none;
+    padding-top: 4px;
+  }
+  .chart-box.show { display: block; }
+  .chart-box svg { display: block; width: 100%; height: auto; }
+  .chart-meta {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+  .chart-meta .up { color: var(--buy); }
+  .chart-meta .down { color: var(--sell); }
+  .chart-msg {
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-faint);
+    padding: 18px 0;
+  }
+
+  .deep-box {
+    display: none;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    background: var(--card-raised);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 13px;
+  }
+  .deep-box.show { display: block; }
+
   .flag-source {
     display: flex;
     align-items: center;
@@ -366,6 +428,7 @@
 
   let currentMarket = 'se';
   let data = null;
+  let cardFlags = [];
 
   const mainEl = document.getElementById('main');
   const updatedLine = document.getElementById('updatedLine');
@@ -382,6 +445,16 @@
   });
 
   refreshBtn.addEventListener('click', () => load(true));
+
+  mainEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.flag-action-btn');
+    if (!btn) return;
+    const idx = +btn.dataset.idx;
+    const flag = cardFlags[idx];
+    if (!flag) return;
+    if (btn.dataset.action === 'chart') toggleChart(idx, flag, btn);
+    else toggleDeep(idx, flag, btn);
+  });
 
   function showToast(msg) {
     toastEl.textContent = msg;
@@ -421,7 +494,27 @@
     return html;
   }
 
-  function flagCardHtml(flag, isHero) {
+  function registerFlag(flag) {
+    cardFlags.push(flag);
+    return cardFlags.length - 1;
+  }
+
+  function actionsHtml(flag, idx) {
+    let html = '<div class="flag-actions">';
+    if (flag.ticker) {
+      html += '<button class="flag-action-btn" data-action="chart" data-idx="' + idx + '" type="button">📈 Graf</button>';
+    }
+    html += '<button class="flag-action-btn" data-action="deep" data-idx="' + idx + '" type="button">🔍 Förklara djupare</button>';
+    html += '</div>';
+    if (flag.ticker) {
+      html += '<div class="chart-box" id="chart-' + idx + '"></div>';
+    }
+    html += '<div class="deep-box" id="deep-' + idx + '"></div>';
+    return html;
+  }
+
+  function flagCardHtml(flag) {
+    const idx = registerFlag(flag);
     return (
       '<div class="flag-card">' +
         '<div class="flag-top">' +
@@ -433,6 +526,7 @@
         '</div>' +
         '<div class="confidence"><span class="label">Konfidensgrad</span>' + confBars(flag.konfidensgrad) + '<span class="value">' + flag.konfidensgrad + '</span></div>' +
         '<p class="flag-reason">' + flag.motivering + '</p>' +
+        actionsHtml(flag, idx) +
         (flag.källa ? '<a class="flag-source" href="' + flag.källa + '" target="_blank" rel="noopener">↗ ' + sourceHost(flag.källa) + '</a>' : '') +
         (flag.id ? outcomeRow(flag) : '') +
       '</div>'
@@ -453,6 +547,7 @@
       return;
     }
 
+    cardFlags = [];
     let html = '<p class="run-date">' + market.datum + ' — ' + market.körning + '</p>';
 
     if (market.topp) {
@@ -473,6 +568,7 @@
   }
 
   function flagCardInner(flag) {
+    const idx = registerFlag(flag);
     return (
       '<div class="flag-top">' +
         '<div>' +
@@ -483,9 +579,96 @@
       '</div>' +
       '<div class="confidence"><span class="label">Konfidensgrad</span>' + confBars(flag.konfidensgrad) + '<span class="value">' + flag.konfidensgrad + '</span></div>' +
       '<p class="flag-reason">' + flag.motivering + '</p>' +
+      actionsHtml(flag, idx) +
       (flag.källa ? '<a class="flag-source" href="' + flag.källa + '" target="_blank" rel="noopener">↗ ' + sourceHost(flag.källa) + '</a>' : '') +
       (flag.id ? outcomeRow(flag) : '')
     );
+  }
+
+  function toggleChart(idx, flag, btn) {
+    const box = document.getElementById('chart-' + idx);
+    if (!box) return;
+    if (box.classList.contains('show')) {
+      box.classList.remove('show');
+      btn.classList.remove('active');
+      return;
+    }
+    box.classList.add('show');
+    btn.classList.add('active');
+    if (box.dataset.loaded) return;
+    box.innerHTML = '<div class="chart-msg">Laddar graf …</div>';
+    fetch(API_BASE + '/kursdata?ticker=' + encodeURIComponent(flag.ticker), { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => {
+        box.dataset.loaded = '1';
+        renderChartSvg(box, d);
+      })
+      .catch(() => { box.innerHTML = '<div class="chart-msg">Kunde inte hämta graf just nu.</div>'; });
+  }
+
+  function renderChartSvg(box, d) {
+    if (!d.ok || !d.points || d.points.length < 2) {
+      box.innerHTML = '<div class="chart-msg">Ingen kursdata tillgänglig.</div>';
+      return;
+    }
+    const pts = d.points;
+    const values = pts.map(p => p.c);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = (max - min) || 1;
+    const w = 300, h = 80, pad = 4;
+    const stepX = (w - pad * 2) / (pts.length - 1);
+    const coords = values.map((v, i) => {
+      const x = pad + i * stepX;
+      const y = h - pad - ((v - min) / range) * (h - pad * 2);
+      return x.toFixed(1) + ',' + y.toFixed(1);
+    });
+    const up = (d.forandring || 0) >= 0;
+    const stroke = up ? '#63b18a' : '#d9806f';
+    const line = coords.join(' ');
+    const svg = '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+      '<polyline points="' + line + '" fill="none" stroke="' + stroke + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      '</svg>';
+    const changeCls = up ? 'up' : 'down';
+    const changeSign = up ? '+' : '';
+    const change = (typeof d.forandring === 'number') ? (changeSign + d.forandring.toFixed(1) + '% (3 mån)') : '–';
+    box.innerHTML = svg +
+      '<div class="chart-meta"><span>' + (d.ticker || '') + (d.valuta ? ' · ' + d.valuta : '') + '</span>' +
+      '<span class="' + changeCls + '">' + change + '</span></div>';
+  }
+
+  function toggleDeep(idx, flag, btn) {
+    const box = document.getElementById('deep-' + idx);
+    if (!box) return;
+    if (box.classList.contains('show')) {
+      box.classList.remove('show');
+      btn.classList.remove('active');
+      return;
+    }
+    box.classList.add('show');
+    btn.classList.add('active');
+    if (box.dataset.loaded) return;
+    box.textContent = 'Analyserar djupare …';
+    btn.disabled = true;
+    fetch(API_BASE + '/forklara-djupare', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        bolag: flag.bolag,
+        bransch: flag.bransch,
+        signal: flag.signal,
+        konfidensgrad: flag.konfidensgrad,
+        motivering: flag.motivering,
+        källa: flag.källa
+      })
+    })
+      .then(r => r.json())
+      .then(d => {
+        box.dataset.loaded = '1';
+        box.textContent = d.forklaring || 'Kunde inte generera en djupare analys just nu.';
+      })
+      .catch(() => { box.textContent = 'Kunde inte hämta djupare analys just nu — försök igen.'; })
+      .finally(() => { btn.disabled = false; });
   }
 
   function bindOutcomeButtons() {
