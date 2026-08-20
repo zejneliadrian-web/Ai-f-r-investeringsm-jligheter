@@ -1,4 +1,4 @@
-const CACHE_NAME = 'signalen-v2';
+const CACHE_NAME = 'signalen-v3';
 const SHELL_FILES = [
   './',
   './index.html',
