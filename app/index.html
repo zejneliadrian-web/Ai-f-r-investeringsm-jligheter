@@ -235,6 +235,17 @@
     margin: 0;
   }
 
+  .flag-ticker-name {
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    display: block;
+  }
+  .flag-ticker-name .mono {
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--accent);
+  }
+
   .flag-sector {
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.66rem;
@@ -490,6 +501,17 @@
     try { return new URL(url).hostname.replace('www.', ''); } catch (e) { return url; }
   }
 
+  function tickerLine(flag) {
+    if (!flag.tickerNamn && !flag.ticker) return '';
+    const namn = flag.tickerNamn || '';
+    const ticker = flag.ticker || '';
+    return '<span class="flag-ticker-name">' +
+      (namn ? namn : '') +
+      (namn && ticker ? ' · ' : '') +
+      (ticker ? '<span class="mono">' + ticker + '</span>' : '') +
+      '</span>';
+  }
+
   function outcomeRow(flag) {
     const opts = [
       { v: 'Rätt', cls: 'ratt', label: '✓ Rätt' },
@@ -531,6 +553,7 @@
         '<div class="flag-top">' +
           '<div>' +
             '<p class="flag-company">' + flag.bolag + '</p>' +
+            tickerLine(flag) +
             (flag.bransch ? '<span class="flag-sector">' + flag.bransch + '</span>' : '') +
           '</div>' +
           '<span class="signal-pill ' + signalClass(flag.signal) + '"><span class="dot"></span>' + flag.signal + '</span>' +
@@ -584,6 +607,7 @@
       '<div class="flag-top">' +
         '<div>' +
           '<p class="flag-company">' + flag.bolag + '</p>' +
+          tickerLine(flag) +
           (flag.bransch ? '<span class="flag-sector">' + flag.bransch + '</span>' : '') +
         '</div>' +
         '<span class="signal-pill ' + signalClass(flag.signal) + '"><span class="dot"></span>' + flag.signal + '</span>' +
